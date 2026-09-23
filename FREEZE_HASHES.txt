@@ -1,0 +1,38 @@
+FREEZE HASHES - gemma-earnings-study
+======================================================================
+
+Private repository : https://github.com/Vamiko234/gemma-earnings-study
+Commit             : d4420d6e04463f2e2f5a3c487c12d3d5dcd012e1
+Generated          : 2026-09-23
+
+CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
+endings. Reproduce any line with:
+
+    git show <commit>:<path> | sha256sum
+
+A hash taken from a Windows working tree will NOT match: this repository is
+developed with core.autocrlf=true, which stores LF and checks out CRLF.
+
+PUBLISHED FILES (this repository) - verify with sha256sum <file>
+----------------------------------------------------------------------
+2049436b592cca20c7a8000fa92e6a4ef81e2d4a5f4ac4ea85315d3d78e02b37  deviations.md
+051c4e97242f7009e8667d644d4bd76a2543b2a901d54336d8412c3faed5c7e5  excluded_event_ids.csv
+1a96aceb9e0844a1e82dd2890f71d2fb459d68ca10c0cfada21b6684a177341b  prereg.md
+efa0d769074968c72a84cc1e87e5969ce5e381468f081e6f70f9a9d56afd809c  scrubber_freeze.json
+
+FROZEN SOURCE FILES (private repository, hashes only)
+----------------------------------------------------------------------
+These files are NOT published. Publishing their hashes now fixes their content;
+anyone later given access to the private repository - a reviewer, a journal, or the
+public on release - can check that the code that produced the results is the code
+that was frozen before the results existed.
+
+103db06eb37d535445138777209505130af57239dec5f504c916559aeee49e4c  src/scrub.py
+c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944  src/sue.py
+93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa  src/common.py
+062731498075e2a7d852cfe6abdbb2165bdf9717e4c51446aa6fac9adbda49c6  src/forward_test_daily.py
+cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42  src/scrub_audit.py
+7dc0885e5f04cbf148d5186325b180b8258ba067bfba09cb9acccdb936dd6790  src/pilot.py
+bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d  src/gpulock.py
+863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546  src/identity_match.py
+ea00707c09dbd1f1c99b14dbbc5fb1268df3a8965c2bcc60805c83d336dd63ab  src/test_trim.py
