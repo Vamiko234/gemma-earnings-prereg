@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : 1a197a5cff5a8a6fc1b4715f21f44248522d09df
+Commit             : a30cf71b39f7bfd3e635ddc9794dc9ed06df8ea3
 Generated          : 2026-09-23
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -15,10 +15,10 @@ developed with core.autocrlf=true, which stores LF and checks out CRLF.
 
 PUBLISHED FILES (this repository) - verify with sha256sum <file>
 ----------------------------------------------------------------------
-a797990a072c6fc23706fc8ff4798f32c37643c987a24d968aeb82b4c8b44737  deviations.md
+0474f9ab39926489d15fbee7728f32a7047a8fca9ffd964fb10d850eed21fad2  deviations.md
 051c4e97242f7009e8667d644d4bd76a2543b2a901d54336d8412c3faed5c7e5  excluded_event_ids.csv
-6faee589592eac3fc8916ee95e3bf4b1d5bdb6372e6ceed71fb8377272948ae4  prereg.md
-8deb2da15e41d0e68c2c0ca8977c3e69a11a471c866da3992d0330e5e08df435  scrubber_freeze.json
+b580e4975f92d625578b5dfcdc47676373c0a8602fe743686319ff6ff4992fd9  prereg.md
+fa97ad5d6b3b3ae60ac4bb95c750b9239cdb6417249b30ecdd81f13a84e8f0b0  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -27,12 +27,17 @@ anyone later given access to the private repository - a reviewer, a journal, or 
 public on release - can check that the code that produced the results is the code
 that was frozen before the results existed.
 
-103db06eb37d535445138777209505130af57239dec5f504c916559aeee49e4c  src/scrub.py
+fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f  src/scrub.py
+587e712eded80e023e0846bccd01bebb52b52d910cca6d1b124cd3e363199b77  src/scoring.py
 c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944  src/sue.py
 93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa  src/common.py
 4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988  src/forward_test_daily.py
+7bb54b2aefeb4375fa27f81e5cbdcab0036a1772d8d988788ca5272e408b67de  src/run_2x2.py
 cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42  src/scrub_audit.py
 d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b  src/pilot.py
 bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d  src/gpulock.py
 863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546  src/identity_match.py
 aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827  src/test_trim.py
+f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6  src/test_shared_path.py
+7a02e4419d663166a5c3de734f456c2a100deb39cf31b057c34229422c77b925  src/test_runner.py
+b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8  src/test_determinism.py

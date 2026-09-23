@@ -738,7 +738,14 @@ scored, which is what makes the "pre" in pre-registration verifiable rather than
 
 ### 13.1 Scrubber freeze (deviations D-005, D-007, D-008, D-009)
 
-**Refrozen 2026-09-22** after the over-scrub fixes of D-009. Audit 11 meets the stopping rule.
+**Refrozen 2026-09-23** after D-017 made every tie-capable sort in `scrub.py` total.
+Before that fix `scrub()` was not a function of its input: the same release scrubbed in
+four processes produced four different documents, because equal-length brands were
+ordered by a hash seed that CPython randomises per process. Audit 12 (n=48) meets the
+D-008 stopping rule: 2 residual identity leaks, both the disclosed ordinary-vocabulary
+class, 0 over-scrubbed financial terms, 0 temporal residue.
+
+*Previously refrozen 2026-09-22 after the over-scrub fixes of D-009 (audit 11).*
 
 **Hash convention (corrected 2026-09-23).** Every hash below is the SHA-256 of the file
 **as committed**, i.e. with LF line endings, reproducible on any machine with:
@@ -753,18 +760,24 @@ by anyone who cloned the repository, and two of them (`src/pilot.py`,
 `src/forward_test_daily.py`) had in addition gone stale when D-010, D-011 and D-012 changed
 those files. Both problems are corrected here; the scrubber itself never changed.
 
-**Source freeze at commit `496774ab2867fa5ddb26f2fbc68f2c63cf769d74`:**
+**Source freeze at commit `1f15429a82e92e9aaaf555b0dbfd173f07b3cd47`** (refrozen 2026-09-23 under D-017):
 
 | Artefact | SHA-256 (as committed) |
 |---|---|
-| `src/scrub.py` | `103db06eb37d535445138777209505130af57239dec5f504c916559aeee49e4c` |
+| `src/scrub.py` | `fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f` |
+| `src/scoring.py` | `587e712eded80e023e0846bccd01bebb52b52d910cca6d1b124cd3e363199b77` |
 | `src/sue.py` | `c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944` |
 | `src/common.py` | `93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa` |
-| `src/forward_test_daily.py` | `062731498075e2a7d852cfe6abdbb2165bdf9717e4c51446aa6fac9adbda49c6` |
+| `src/forward_test_daily.py` | `4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988` |
+| `src/run_2x2.py` | `7bb54b2aefeb4375fa27f81e5cbdcab0036a1772d8d988788ca5272e408b67de` |
 | `src/scrub_audit.py` | `cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42` |
-| `src/pilot.py` | `7dc0885e5f04cbf148d5186325b180b8258ba067bfba09cb9acccdb936dd6790` |
+| `src/pilot.py` | `d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b` |
 | `src/gpulock.py` | `bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d` |
-| `src/test_trim.py` | `ea00707c09dbd1f1c99b14dbbc5fb1268df3a8965c2bcc60805c83d336dd63ab` |
+| `src/identity_match.py` | `863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546` |
+| `src/test_trim.py` | `aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827` |
+| `src/test_shared_path.py` | `f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6` |
+| `src/test_runner.py` | `7a02e4419d663166a5c3de734f456c2a100deb39cf31b057c34229422c77b925` |
+| `src/test_determinism.py` | `b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8` |
 | `FINANCIAL_STOP` (427 terms) | `6f85fa4c4870ba1db6e983fae74716312ab767793900f4691247ba100f044f2b` |
 | `NAME_SUFFIX_STOP` (28 terms) | `1a7e5e4fbf3174d6ab3fd9a471a13eec2eedf9ddb5896308ad5ca32c5c3da55f` |
 
@@ -785,7 +798,8 @@ block refreezing.
 | a8 (808) | 46 | 1 | 0 | 0 | pass (identity only) |
 | a9 (909) | 44 | 23 | 97 | 0 | fail - my own regressions |
 | a10 (1010) | 43 | 3 | 26 | 0 | fail - incomplete month/brand fixes |
-| **a11 (1111)** | **45** | **11** | **1** | **0** | **PASS** |
+| a11 (1111) | 45 | 11 | 1 | 0 | PASS |
+| **a12 (1212)** | **48** | **2** | **0** | **0** | **PASS — refreeze gate (D-017)** |
 
 Audit 11's residues are all disclosed classes: `CAT` (Caterpillar), `IT` (Gartner), `53`
 (Fifth Third). Its lexical-loss top-20 is entirely by design - `quarter`/`first`/`fourth`

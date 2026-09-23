@@ -1585,3 +1585,112 @@ before launch, not assumed either way.**
 | 2026-09-23 | §4.5 | Transient engine faults retried up to 3× on the identical prompt | 15% of rehearsal scorings failed on a recoverable fault and were discarded | None — pre-confirmatory |
 | 2026-09-23 | §4.9 | A failed event keeps no resume key; retried next run, given up on after 3 attempts | A transient fault permanently removed an event from every future run | None — pre-confirmatory |
 | 2026-09-23 | §10 | Runtime estimate revised to ~14.6 days from measurement | D-006's 8.2 days predates config B, the D-012 fit probe and the H3 probes | None — pre-confirmatory |
+
+---
+
+## D-017 · 2026-09-23 · The frozen scrubber was not a function. Same release, four runs, four documents
+
+**This is the most serious defect found in the project so far.** `scrub()` — the frozen,
+eleven-times-audited instrument that defines what the model is allowed to see — **returned a
+different document on every run.**
+
+### How it surfaced
+
+Not from a test. PLD scored `BULLISH 0.75` in one run and `BULLISH 0.80` in another, on a
+prompt of identical token length (29,662 release tokens both times). The obvious suspect was
+the model, so that was measured first: WRB scored four consecutive times produced
+**byte-identical** answers, identical `gen_tokens`, identical thinking length. The model is
+deterministic. The input was not.
+
+Scrubbing the same PLD release in four separate processes:
+
+| Process | Characters | SHA-256 (first 16) |
+|---|---|---|
+| 1 | 114,043 | `c2efd731af0cb84f` |
+| 2 | 114,054 | `b3a2c7602da392be` |
+| 3 | 114,068 | `d99051f1685dccaf` |
+| 4 | 114,067 | `2570a0bd35fe99d6` |
+
+Four runs, four documents. **Within** a single process it was perfectly stable — scrubbing
+the same text twice in one process gave identical output every time.
+
+### The cause
+
+```python
+brands = [p for p, c in sorted(candidates.items(), key=lambda kv: -kv[1]) ...]
+brands = sorted(set(brands), key=len, reverse=True)
+```
+
+Both sort keys are **non-total**. Brands with equal counts, and brands of equal length, tie —
+and the tie is then broken by the iteration order of a `dict` or a `set` of strings. CPython
+randomises string hashing per process unless `PYTHONHASHSEED` is fixed, so **that order
+changes every time the interpreter starts.**
+
+Brands are replaced longest-first and numbered in order, so a different tie order produces
+different `BRAND_n` numbering *and* a different replacement sequence — which is why the
+output length moved too, not just the labels. The first difference in PLD appears at
+character 7: `BRAND_74` in one run, `BRAND_73` in the next.
+
+### Why eleven audits, five pilot runs and a probe run all missed it
+
+Every one of them scrubbed each document **once, in one process**, and had nothing to compare
+against. Within a process the function is stable, so every check ever written agreed with
+itself. The property that failed — reproducibility across runs — was never the thing being
+tested, by anything.
+
+This is the same shape as D-015 (two anonymisers, neither test ever comparing them) and D-012
+(a truncation detector reading the output of the truncation). **A check that shares the
+code's blind spot reports clean**, and this project has now produced three of them.
+
+### The fix
+
+Every sort key in `scrub.py` that could tie now ends in the string itself, making the order
+total and independent of the hash seed:
+
+```python
+brands = [p for p, c in sorted(candidates.items(), key=lambda kv: (-kv[1], kv[0])) ...]
+brands = sorted(set(brands), key=lambda b: (-len(b), b))
+```
+
+The same latent defect in two `sorted({...}, key=len)` alternation lists was fixed in the
+same pass. After the fix, four separate processes produce **byte-identical** output
+(114,007 characters, one hash), and so do three processes on the full 113,572-character
+release.
+
+### The test
+
+`src/test_determinism.py`, which spawns **real subprocesses** with the default randomised
+hash seed. An in-process test of this property is worthless — it passes while the property
+is false, which is exactly what happened for eleven audits. It also scans `scrub.py` for the
+defect *class*: any length-only or count-only sort over a set or dict.
+
+### What this means for results already recorded
+
+**Nothing confirmatory has been scored, so no confirmatory result is affected.**
+
+For the pre-confirmatory work, the honest statement is that the exact anonymised text behind
+each recorded row **cannot be regenerated** from the frozen code — the stored
+`scrubbed_text` in `pilot_raw.jsonl` is the only record of what the model actually read.
+Rows remain valid as records of *what was scored*; they are not reproducible *inputs*.
+
+The leak properties are very likely unaffected: the brand **set** is determined by counts and
+capitalisation, not by ordering, so the same names were neutralised in every run — only
+their labels and replacement order moved. "Very likely" is doing real work in that sentence,
+and it is why audit 12 is being run on the fixed scrubber rather than assumed to pass. The
+pilot and probe results already carry the caveat that they are pre-confirmatory.
+
+**The H3 numbers presented at Gate 3 were produced under the unfixed scrubber** and should be
+read with that in mind. They are pilot figures on n=20 with Wilson intervals, already
+reported as indicative.
+
+### Refreeze
+
+The scrubber is unfrozen and refrozen under the D-008 stopping rule, with audit 12 (seed
+1212) as the gate. `src/scrub.py` changes, so prereg §13.1 and `data/scrubber_freeze.json`
+take new hashes.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-23 | §7.1 | All tie-capable sorts in `scrub.py` made total (hash-seed independent) | `scrub()` returned a different document on every run; same release, four processes, four outputs | None confirmatory — nothing confirmatory has been scored |
+| 2026-09-23 | §13.1 | Scrubber refrozen with new hashes, gated on audit 12 | `src/scrub.py` changed | None — pre-confirmatory |
+| 2026-09-23 | §11 | Limitations: pre-confirmatory anonymised text is not regenerable from the frozen code | Stated rather than discovered later by a replicator | None |
