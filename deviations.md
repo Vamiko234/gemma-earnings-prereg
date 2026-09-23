@@ -1586,6 +1586,86 @@ before launch, not assumed either way.**
 | 2026-09-23 | §4.9 | A failed event keeps no resume key; retried next run, given up on after 3 attempts | A transient fault permanently removed an event from every future run | None — pre-confirmatory |
 | 2026-09-23 | §10 | Runtime estimate revised to ~14.6 days from measurement | D-006's 8.2 days predates config B, the D-012 fit probe and the H3 probes | None — pre-confirmatory |
 
+### D-016 continued · the clean rehearsal, on the fixed code
+
+The rehearsal was re-run end to end after D-016 (retry, resume keys, schema) and D-017
+(scrubber determinism). Old output preserved at `results/runner_test_prefix_d016/`.
+
+**20 of 20 scored. Zero failures.**
+
+Which is *not* evidence that the CUDA problem is solved, and must not be reported as such.
+Nothing was changed that would prevent a fault — retries were added, and **the retry path
+never fired**. The honest reading is that the fault rate is variable: 15% in the first
+rehearsal, 0% in the second. One plausible difference is machine load — the first ran while
+2.4 GB of installers were downloading and being SHA-256 hashed on the same machine; the
+second ran on an idle system. That is a hypothesis, not a finding. The retry exists because
+the fault is real and recoverable, whatever its rate.
+
+**Measured runtime, second rehearsal:**
+
+| Arm | median | filings | projected |
+|---|---|---|---|
+| post_scrubbed | 46.4 s | 3,358 | 43.3 h |
+| post_unscrubbed | 37.5 s | 3,358 | 35.0 h |
+| pre_scrubbed | 27.1 s | 9,148 | 68.9 h |
+| pre_unscrubbed | 25.8 s | 9,148 | 65.6 h |
+| **Total** | | **25,012** | **213 h ≈ 8.9 days** |
+
+Against 14.6 days from the first rehearsal. **The gap between the two is the honest measure
+of how little five events per arm can tell you**: the pre-cutoff scrubbed median moved from
+63.9 s to 27.1 s on the same five releases. Per-event times within a single arm span
+25–185 s. Treat 9–15 days as the range and the progress file's running median as the real
+estimate once the run is under way.
+
+### Unparseable outputs now have exactly one cause, and it is the output budget
+
+2 of 20 scorings were `UNPARSEABLE`. Both had `gen_tokens = 6000 = num_predict`,
+`done_reason=length`, and an empty answer after 18,759 and ~19,000 characters of thinking:
+
+| Event | Release tokens | Trimmed | Cause |
+|---|---|---|---|
+| PLD | 29,648 | yes | thinking exhausted `num_predict` |
+| ALB | 12,345 | **no** | thinking exhausted `num_predict` |
+
+ALB matters more than PLD here: at 12,345 release tokens it is an ordinary-sized release,
+nowhere near the trim. **This is not a length problem.** Some releases simply make the model
+think past 6,000 tokens. With the trim enforced at 30,000, a worst-case prompt plus
+`num_predict` uses 35,738 of 40,960 context tokens, and ALB's uses about 18,400 — so there
+are 5,000 to 22,000 context tokens sitting unused while events are lost to the output cap.
+
+**A change to `num_predict` was considered and is NOT being made unilaterally.** The
+argument for it — greedy decoding at temperature 0 emits the same tokens regardless of the
+cap, so raising it can only rescue events that currently hit it — was tested rather than
+asserted, and the test did not fully support it:
+
+| Event | `num_predict` 6,000 | `num_predict` 14,000 | |
+|---|---|---|---|
+| PLD | gen 2,314, `stop` | gen 2,314, `stop` | identical |
+| WRB | gen 1,530, think 5,358 ch | gen 1,538, think 5,210 ch | **differs slightly** |
+
+PLD is byte-identical; WRB is not. Either `num_predict` has a small effect on generation, or
+there is occasional run-to-run variation at the margins that four identical WRB runs earlier
+did not reveal. Either way the neutrality claim is **unproven**, so raising `num_predict` is
+a genuine change to the frozen configuration (D-011, prereg §13.2) and belongs to the author,
+before launch, not to whoever is writing code that evening.
+
+### Unparseable outcomes are unstable, not just non-random
+
+PLD on the **stored** pre-D-017 scrubbed text thinks 7,673 characters and answers BULLISH
+0.75. PLD on the **new deterministic** scrubbed text — the same release, differing by 14
+tokens — thinks 18,759 characters and never answers.
+
+A 14-token change in the input flipped the outcome between "answers comfortably" and
+"exhausts the entire output budget". D-010 item 4 records that unparseable outputs are
+non-random and correlated with release length; this adds that for borderline events they are
+also **unstable under trivial input perturbation**. Reported in the limitations, and a
+further reason the unparseable rate is not treated as random dropout.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-23 | §10 | Runtime stated as a 9–15 day range, not a point estimate | Two rehearsals of the same 20 events gave 14.6 and 8.9 days | None |
+| 2026-09-23 | §11 | Limitations: unparseable outcomes are unstable under trivial input change, not merely non-random | PLD flipped on a 14-token input difference | None |
+
 ---
 
 ## D-017 · 2026-09-23 · The frozen scrubber was not a function. Same release, four runs, four documents
