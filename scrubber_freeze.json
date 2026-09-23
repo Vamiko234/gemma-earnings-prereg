@@ -5,12 +5,12 @@
     "src/scrub.py": "103db06eb37d535445138777209505130af57239dec5f504c916559aeee49e4c",
     "src/sue.py": "c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944",
     "src/common.py": "93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa",
-    "src/forward_test_daily.py": "062731498075e2a7d852cfe6abdbb2165bdf9717e4c51446aa6fac9adbda49c6",
+    "src/forward_test_daily.py": "4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988",
     "src/scrub_audit.py": "cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42",
-    "src/pilot.py": "7dc0885e5f04cbf148d5186325b180b8258ba067bfba09cb9acccdb936dd6790",
+    "src/pilot.py": "d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b",
     "src/gpulock.py": "bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d",
     "src/identity_match.py": "863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546",
-    "src/test_trim.py": "ea00707c09dbd1f1c99b14dbbc5fb1268df3a8965c2bcc60805c83d336dd63ab"
+    "src/test_trim.py": "aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827"
   },
   "financial_stop": {
     "n": 427,
@@ -509,5 +509,5 @@
   },
   "trim_tokens": 30000,
   "hash_convention": "SHA-256 of the file as committed (LF). Reproduce with: git show <commit>:<path> | sha256sum",
-  "hashes_at_commit": "e71b434f3c8a9693044f4a5c966aa4e152aaca27"
+  "hashes_at_commit": "1a197a5cff5a8a6fc1b4715f21f44248522d09df"
 }

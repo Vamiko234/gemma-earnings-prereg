@@ -819,10 +819,13 @@ limitations; together they are why **H3 is reported as an upper bound**.
 | thinking | on | `"think": True` in `score()` |
 | release trim | 30,000 tokens, enforced by measurement (D-012) | `TRIM_TOKENS` |
 
-**One file, one definition.** Every one of these lives in `src/forward_test_daily.py` and
-nowhere else. `src/pilot.py` and `src/probe_precutoff.py` import the scoring path from it
-rather than restating any value, which was verified by grepping `src/` for every setting
-name on 2026-09-23. The other files in `src/` that contain `num_ctx` or `num_predict`
+**One file, one definition.** Every one of these lives in **`src/scoring.py`** and nowhere
+else (moved there from `src/forward_test_daily.py` by D-015, which also made that module the
+single scoring path). `src/forward_test_daily.py`, `src/run_2x2.py`, `src/pilot.py` and
+`src/probe_precutoff.py` all import the configuration and the scoring path from it rather
+than restating any value. This is enforced by `src/test_shared_path.py`, which fails if any
+runner defines its own scoring function or redefines any frozen setting - a check that exists
+because two anonymisers coexisted undetected through eleven audits (D-015). The other files in `src/` that contain `num_ctx` or `num_predict`
 literals - `bench2.py`, `bench3.py`, `bench8k.py`, `bench_model.py`, `bench_real.py`,
 `crash_test.py`, `ctx_capacity.py`, `ptok_test.py`, `test_config.py`, `test_trim.py` - are
 benchmarks, capacity probes and tests. None is on the scoring path and none is imported by

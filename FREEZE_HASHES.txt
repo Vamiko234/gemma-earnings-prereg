@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : 1a46e2af992ef4c2666bc706fa59ce3167c65ef2
+Commit             : 1a197a5cff5a8a6fc1b4715f21f44248522d09df
 Generated          : 2026-09-23
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -15,10 +15,10 @@ developed with core.autocrlf=true, which stores LF and checks out CRLF.
 
 PUBLISHED FILES (this repository) - verify with sha256sum <file>
 ----------------------------------------------------------------------
-2049436b592cca20c7a8000fa92e6a4ef81e2d4a5f4ac4ea85315d3d78e02b37  deviations.md
+a797990a072c6fc23706fc8ff4798f32c37643c987a24d968aeb82b4c8b44737  deviations.md
 051c4e97242f7009e8667d644d4bd76a2543b2a901d54336d8412c3faed5c7e5  excluded_event_ids.csv
-f63bfb24f4941863adf8d81187771e416c9e675e875003160975b3a6397fc5a3  prereg.md
-efa0d769074968c72a84cc1e87e5969ce5e381468f081e6f70f9a9d56afd809c  scrubber_freeze.json
+6faee589592eac3fc8916ee95e3bf4b1d5bdb6372e6ceed71fb8377272948ae4  prereg.md
+8deb2da15e41d0e68c2c0ca8977c3e69a11a471c866da3992d0330e5e08df435  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -30,9 +30,9 @@ that was frozen before the results existed.
 103db06eb37d535445138777209505130af57239dec5f504c916559aeee49e4c  src/scrub.py
 c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944  src/sue.py
 93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa  src/common.py
-062731498075e2a7d852cfe6abdbb2165bdf9717e4c51446aa6fac9adbda49c6  src/forward_test_daily.py
+4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988  src/forward_test_daily.py
 cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42  src/scrub_audit.py
-7dc0885e5f04cbf148d5186325b180b8258ba067bfba09cb9acccdb936dd6790  src/pilot.py
+d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b  src/pilot.py
 bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d  src/gpulock.py
 863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546  src/identity_match.py
-ea00707c09dbd1f1c99b14dbbc5fb1268df3a8965c2bcc60805c83d336dd63ab  src/test_trim.py
+aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827  src/test_trim.py

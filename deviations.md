@@ -1204,3 +1204,384 @@ recorded in the runbook so it is not rediscovered later.
 | 2026-09-23 | §13.3 (new) | Public mirror + Wayback + Software Heritage replace OSF as the independent timestamp | OSF requires account holders to be 18; the author is 15 | None — pre-confirmatory |
 | 2026-09-23 | §13.3 | Confirmatory scoring gated on the archive links being recorded | An unproven independence claim is worse than a disclosed one | None — pre-confirmatory |
 | 2026-09-23 | §13.1 | `scrubber_freeze.json` hashes corrected to the committed-LF convention | Seven of nine were irreproducible off-machine; two were stale | None — the scrubber is byte-identical |
+
+---
+
+## D-014 · 2026-09-23 · The confirmatory 2×2 runner: design, and four decisions taken before it ran
+
+**Context.** The 2×2 ablation was pre-registered in D-006 and the configuration frozen in
+D-011/D-012, but **no confirmatory runner existed**. `pilot.py` scores 20 fixed events on a
+single arm; it has no arm handling, no resumption, no exclusion logic and no GPU handshake.
+D-011's statement that "the main runner checks the lock between events and pauses while it
+is held" described code that had never been written. This entry records the runner that now
+exists (`src/run_2x2.py`), and the decisions taken **before** it scored anything.
+
+### (1) The headline gap is measured on the never-trimmed subsample
+
+Scrubbing changes a release's length, so the scrubbed and unscrubbed versions of the same
+filing tokenise differently and the 30,000-token trim **cuts them at different points in the
+document**. For any trimmed event, the scrubbed/unscrubbed gap would then mix "what scrubbing
+removed" with "how much of the document each arm saw" — two different things, one number.
+
+**The headline gap is therefore computed on filings that were trimmed in NEITHER arm**, with
+the full sample reported alongside as a robustness check and **trimmed counts reported per
+arm**. Pre-registered here, before any confirmatory event exists, so the subsample cannot be
+chosen to suit a result.
+
+Rejected alternatives, and why: trimming the raw text first and scrubbing afterwards would
+make the main run inconsistent with the forward test; trimming both arms to the more
+restrictive arm's span would discard content from the arm that did not need trimming and
+change the pre-registered rule for every event to fix a minority of them.
+
+### (2) A manipulation check on the unscrubbed arms (deviation from D-006)
+
+D-006 ruled that "the H3 identity probe runs on the scrubbed cells only; asking which company
+issued an unscrubbed release is not a measurement of anything." That is correct as
+*measurement* and wrong as *instrument validation*. If the identity probe does not score near
+100% when the company name is in plain sight, the probe is broken — and every H3 number it
+has ever produced is suspect.
+
+So the identity probe also runs on a **random 50-event subsample of each unscrubbed arm**,
+fixed seed 20260923, chosen before any result is seen and identical on a resume. These rows
+are labelled `probe_kind=manipulation_check` and are **never pooled into H3**. This is an
+independent check on the measuring instrument, which is the only kind of check worth having
+(rule 3).
+
+### (3) Version lock: RESTORE, not void
+
+prereg §2.1 halts a run whose environment leaves the frozen values. What happens *next* was
+never specified, and the sequential arm order makes it urgent: arms 1 and 4 are about ten
+days apart, so an Ollama or driver update on day five would leave the pre/post comparison
+confounded with the environment rather than the cutoff.
+
+**The pre-registered response is to RESTORE.** The run halts without scoring; the machine is
+rolled back to the exact frozen Ollama and driver versions; the fingerprint is verified; the
+run resumes where it stopped. Events already scored stay valid, because they ran on the
+frozen environment — that is what the halt guarantees. **Only if rollback is impossible are
+the affected arms voided and restarted.**
+
+For this to be possible rather than aspirational, the exact installers are archived locally
+with their SHA-256 hashes **before launch**, and beginner-level rollback steps are written
+into `docs/runbook.md` ("Rolling back Ollama and the NVIDIA driver"). A rollback plan that
+depends on a vendor still hosting an old installer is not a plan.
+
+### (4) No analysis of any arm until all four finish
+
+The arm order — post scrubbed, post unscrubbed, pre scrubbed, pre unscrubbed — means the
+primary result exists days before the ablations. That is deliberate: an abort still yields
+the headline. It also creates an opportunity to look at arm 1 and let it influence arms 2–4.
+
+**Pre-registered: no analysis of any arm is run until all four arms complete.** Progress
+files report counts, timings and ETAs, never signals or outcomes.
+
+### (5) One filing, one scoring — a duplicate found while building
+
+**63 accession numbers appear twice in `events_pit.csv`**: dual-class shares (FOX/FOXA,
+GOOG/GOOGL, UA/UAA, NWS/NWSA) put one CIK's single 8-K into the index under two tickers.
+
+Scoring both is not merely wasteful. The text, CIK and identity are identical, and `scrub()`
+already removes **every** ticker registered to the CIK, so both rows produce a byte-identical
+prompt and — at temperature 0 with a fixed seed — a byte-identical answer. The filing would
+enter the analysis twice as though it were two independent observations, inflating the
+effective sample and breaking any standard error that assumes independence.
+
+Each filing is therefore scored **once**, with every share class recorded in a `tickers`
+column. The share classes have different prices, so the single signal is joined back to each
+ticker's returns at analysis time, and **standard errors cluster on the filing, not the
+ticker**.
+
+Event counts after exclusions and this collapse:
+
+| Arm | Filings |
+|---|---|
+| post_scrubbed (PRIMARY) | 3,358 |
+| post_unscrubbed | 3,358 |
+| pre_scrubbed | 9,148 |
+| pre_unscrubbed | 9,148 |
+| **Total scorings** | **25,012** |
+
+D-006's runtime table assumed 25,220, i.e. 3,401 and 9,209 per arm, which counted the
+exclusions and the dual-class duplicates. Those figures are superseded.
+
+### The runner
+
+`src/run_2x2.py`. It owns selection, persistence, resumption, progress and the GPU
+handshake, and **never the scoring rule** — scoring goes through `scoring.py` and nothing
+else (D-015).
+
+**Resumption.** Per event: the raw output is written and fsynced, then the result row is
+written and fsynced, then the resume key `(acc, arm)` is written and fsynced. The order
+matters. A crash between the row and the key causes a **re-score**, never a **skip**: a
+duplicate row is recoverable and a missing event is not. And because scoring is deterministic,
+a duplicate pair is a free determinism check.
+
+**Exclusions**, applied at selection, asserted three ways. Not "exactly 41 removed per arm" —
+the 41 excluded events do not all live in every pool (20 pilot events are post-cutoff, 20
+probe events are pre-cutoff), so that assertion fails on the first arm. What is asserted is
+that per arm the removal equals the pool overlap; that no excluded id survives selection; and
+that **across the whole run every one of the 41 matched some pool**. An id that never matches
+is a typo or a stale accession number, which is the failure worth catching. Measured: 21, 21,
+20, 20; union 41; none unmatched.
+
+**Hashing** every 100 events and at each arm boundary, pushed daily. Recorded as
+`kind=tamper_evidence_not_foreknowledge`, because these arms are historical: the outcomes
+already exist, so a hash proves only that the file has not changed since it was pushed.
+**prereg §4.8's "hashed before return windows elapse" language does not apply here** and must
+not be reused for these arms. It applies to the forward test, where it means what it says.
+
+**GPU lock** checked between every event via `gpulock.wait_if_held`. The runner never
+acquires the lock; the forward test holds priority.
+
+**Progress** per arm — done, left, percent, median seconds, mean seconds, ETA hours, expected
+finish, elapsed. The ETA uses a **trimmed median**, not a mean: PLD took 196 s against ~33 s
+typical, and a handful of long releases would make a mean-based ETA useless.
+
+**Version lock** before each arm, every 100 events, and stamped into **every row** as an
+environment fingerprint. Re-reading the environment costs about a second, too much per event;
+stamping a cached value costs nothing and is what makes "which events ran on which
+environment" answerable after the fact instead of inferred from timestamps.
+
+### Tests
+
+`src/test_runner.py` drives the **real** `run_arm()` with scoring faked out — the distinction
+that D-011 got wrong. Its five gpulock tests passed while nothing called the lock, because
+they tested `gpulock.py` in isolation. A component tested alone cannot tell you the system
+uses it.
+
+| Test | What it establishes |
+|---|---|
+| GPU lock integration | No event starts while the lock is held; no event is interrupted mid-flight; the runner visibly pauses; it never acquires the lock itself |
+| Resume after a crash | Stop after 3 of 6, restart: arm completes, no duplicates, nothing lost, keys match rows |
+| Write ordering | The row is durable before the key; three fsyncs |
+| Progress ETA | Median 33 s survives a 196 s outlier that drags the mean to 41 s |
+| Failed rows | An EDGAR failure still produces a full-width row with the fingerprint; the CSV never goes ragged |
+| Probe subsample | 50 events, deterministic, scrubbed arms probe everything |
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-23 | §9 | Headline scrubbed/unscrubbed gap on the never-trimmed-in-either-arm subsample; full sample as robustness | Per-arm trimming cuts the two arms at different points, confounding the gap | None — pre-confirmatory |
+| 2026-09-23 | §7.3 | Identity probe on a 50-event unscrubbed subsample as a manipulation check | An unvalidated instrument makes every H3 number suspect | None — pre-confirmatory |
+| 2026-09-23 | §2.1 | Environment mismatch → RESTORE and resume; void only if rollback is impossible | Voiding ten days of scoring for a recoverable change is the wrong default | None — pre-confirmatory |
+| 2026-09-23 | §11 | No analysis of any arm until all four complete | Sequential arms otherwise allow arm 1 to influence arms 2–4 | None — pre-confirmatory |
+| 2026-09-23 | §4.9 | One scoring per filing; dual-class share classes collapsed, tickers retained | 63 filings appeared twice and would have entered the analysis as independent observations | None — pre-confirmatory |
+
+---
+
+## D-015 · 2026-09-23 · There were two anonymisers. The prospective arm was using the weaker one
+
+**Found while specifying what "scrubber off" means for the 2×2's unscrubbed arm** (D-014).
+The question "which function do we turn off?" had two answers, which is how the defect
+surfaced — not through any test.
+
+### The defect
+
+`pilot.py` anonymised with the frozen `scrub()` — the one carried through eleven audits,
+unfrozen and refrozen by D-005, D-007, D-008 and D-009, hashed in prereg §13.1.
+`forward_test_daily.py` anonymised with its own `anonymise()`, a shorter, older function
+that had never been through any audit at all.
+
+The **forward test is the prospective arm**: the most credible part of the study, the one
+whose predictions are hashed and pushed before the outcome exists. It was running the weaker
+anonymiser, and was eight days from scoring live events.
+
+Measured on identical input:
+
+| Input | `anonymise()` (forward test) | `scrub()` (frozen) |
+|---|---|---|
+| `alphacorp.com` | **survives** | `URL_X` |
+| `ir@alphacorp.com` | **survives** | `EMAIL_X` |
+| `Revenue rose in May 2024` | `May YEAR_X` — **month survives** | `DATE_X` |
+
+All three are classes the scrubber was specifically unfrozen to fix: contact blocks and
+temporal leaks in D-007, issuer web domains in D-008 — the entry that records `TI` being
+derivable only from `ti.com`. The forward test received none of those fixes, because it was
+never on that code path.
+
+`anonymise()` also has no tier-2 brand neutralisation, no stop-lists, no leak probes and no
+temporal-residue detection. On YUM's release the frozen scrubber fires 16 tier-1 rules and
+neutralises 49 brands; `anonymise()` has no equivalent step.
+
+**Checked and cleared:** `anonymise()` does *not* carry the D-009 "may" defect. Its month
+pattern requires a digit after the month name, so the lowercase modal verb survives. The
+suspicion was tested rather than asserted.
+
+### Why no test caught it
+
+Every test in the project exercised one path or the other. Nothing tested that they were
+**the same path**. A divergence between two implementations is invisible to any test of
+either implementation, and this one survived eleven scrubber audits for exactly that reason.
+
+### The fix
+
+`src/scoring.py` is now the single scoring path, and holds the frozen configuration
+(prereg §13.2 updated accordingly):
+
+    prepare_text  ->  fit_to_budget  ->  score  ->  identity_probe / time_probe
+
+`prepare_text(raw, ticker, cik, arm)` is the **only** place the scrubbed/unscrubbed
+difference lives, which is what makes the 2×2's gap attributable to scrubbing rather than to
+two code paths that differ in unrecorded ways. `anonymise()` is deleted.
+`forward_test_daily.py` drops from 690 to 345 lines and keeps only what belongs to the daily
+job: EDGAR polling, the trading calendar, the health line, hashing, git.
+
+### The test that keeps it fixed
+
+`src/test_shared_path.py` checks **identity, not behaviour**: `forward_test_daily.score`
+must *be* `scoring.score`, the same object. A behavioural test would pass on the day a
+copy-paste duplicate was made and then drift silently, which is precisely what happened here.
+It also fails if any runner defines its own `score`, `fit_to_budget`, `prepare_text` or
+anonymiser, or redefines the frozen config, and it scans every module in `src/` for a second
+anonymiser under any name.
+
+### Consequence for the forward test
+
+The single event scored so far is the excluded ADBE pipeline test (D-004), so **no forward-
+test result is affected**. From now on the forward test anonymises with the frozen, audited
+scrubber, identically to the confirmatory arms.
+
+Verified before the change was committed: the forward-test dry run completes cleanly, and
+`prepare_text` was exercised on a real filing through the forward test's own call shape
+(YUM 0001041061-25-000008: 50,827 → 50,877 characters, 16 tier-1 rules, 49 brands, ticker
+not leaked, `URL_X` present).
+
+One side effect worth recording: `test_trim.py` began hanging after the split. It patched
+the token counter in the re-exporting module rather than in `scoring`, so the fake never took
+effect and the "offline" test was making real GPU calls against 300,000-character synthetic
+documents. Repointed at `scoring`; `calls=0` in the stale run is the evidence that the fake
+had been bypassed.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-23 | §7.1 | The forward test anonymises with the frozen `scrub()`; `anonymise()` deleted | The prospective arm was leaking issuer domains, IR emails and month names that the frozen scrubber removes | None — only the excluded ADBE test event had been scored |
+| 2026-09-23 | §13.2 | The frozen config and the scoring path move to `src/scoring.py` | One definition, imported by every runner, so the two cannot drift apart again | None — pre-confirmatory |
+
+---
+
+## D-016 · 2026-09-23 · The 5-event rehearsal: a 15% transient GPU failure rate, silently discarded
+
+**The rehearsal.** Before launch, the new runner was run end to end on **5 excluded events
+per arm, through all four arms** — 20 scorings. Excluded events are the right rehearsal set
+because they are already barred from every confirmatory result, and the runner writes test
+output to `results/runner_test/`, never to `results/confirmatory/` (it asserts this).
+
+It found two defects, both introduced by earlier entries in this file.
+
+### Defect 1 — transient engine faults killed events outright
+
+**3 of 20 scorings (15%) failed** with `CUDA error: an illegal memory access was
+encountered`:
+
+| Event | Arm | Outcome |
+|---|---|---|
+| HPQ | post_scrubbed | failed — **then scored fine on post_unscrubbed four minutes later** |
+| SHW | pre_scrubbed | failed — **then scored fine on pre_unscrubbed** |
+| ALB | pre_scrubbed | failed — **then scored fine on pre_unscrubbed** |
+
+Every one of the three succeeded on a later call. The fault is the engine, not the release.
+
+The pre-D-012 `score()` retried CUDA errors. **The D-012 rewrite dropped that retry**, so a
+transient fault now raised and the event was recorded `SCORE_FAILED`. Projected over 25,012
+scorings at the observed rate: **~3,751 events lost**.
+
+### Defect 2 — a failed event was never retried, ever
+
+Worse than losing them once: `append_row()` wrote the resume key for failed rows too. The
+resume logic skips any event with a key, so a transient fault removed an event
+**permanently** — not just from that run, but from every future resume. No amount of
+re-running would recover it.
+
+The two defects compound into the failure mode this study is least able to tolerate:
+**missingness correlated with GPU state rather than with anything about the release**,
+invisible in the output, on ~15% of events. All three failures happened on *scrubbed* arms,
+which make three model calls per event (score, identity probe, time probe) against one for
+most unscrubbed events — so the loss would have been biased **toward the primary arm**.
+
+### The likely cause, stated as a suspicion
+
+VRAM sits at **15,252 of 16,376 MiB (93%, ~1.1 GB headroom)** during scoring, at 74 °C.
+D-011 measured peak 15,351 MiB across 7 events and called config B "stable with ~1 GB of
+VRAM headroom" — on a test that ran no H3 probes and saw no crashes. That test was too small
+and too short to see a 15% rate.
+
+This is **not** established as the cause. What is established is that the faults are
+transient and recoverable. The fix therefore treats them as transient rather than changing
+`num_gpu`, which would mean re-freezing the configuration (D-011, prereg §13.2) days before
+launch, on a suspicion.
+
+### The fix
+
+`score()` re-sends the **identical** prompt up to `ENGINE_RETRIES=3` times with a 20-second
+backoff, for faults matching a known-transient list. It does **not** shrink the budget the
+way the pre-D-012 loop did: after D-012 the prompt is *measured* to fit, so shrinking would
+silently change what the model read for a reason having nothing to do with the release.
+Retries are recorded per row (`engine_retries`, `engine_retry_detail`).
+
+`run_2x2` keeps `failed_<arm>.csv` with attempt counts and **withholds the resume key until
+an event is terminal**, so a failed event is retried on the next run. After
+`MAX_EVENT_ATTEMPTS=3` it is given up on *deliberately*, logged as permanently failed rather
+than dropped silently.
+
+Covered by `test_a_transient_failure_is_retried_on_the_next_run`: a fault on the first pass
+produces a failure row and **no** resume key; the next run retries the event, succeeds, and
+writes the key; no event is lost.
+
+### Defect 3 — the row schema had drifted, caught by the rehearsal's own test
+
+Adding an `attempts` field gave failure rows 33 columns against the good rows' 32. The CSV
+header is written once from the first row, so the file went ragged and unreadable. `SCHEMA`
+is now the single definition, every row passes through `_pad()`, and `_pad()` asserts on
+fields outside the schema. The project's own ragged-CSV test caught this within minutes.
+
+### What else the rehearsal established
+
+**The manipulation check works: 10 of 10.** Every unscrubbed event was identified correctly
+— Yum! Brands, Marriott International, HP Inc., Prologis, W. R. Berkley, Eversource Energy,
+The Home Depot, KeyCorp, The Sherwin-Williams Company, Albemarle. The probe is therefore a
+working instrument, which is what makes a *low* score on scrubbed text evidence about
+scrubbing rather than evidence about the probe (D-014 item 2).
+
+**Scrubbing visibly changes the answer.** ES scrubbed → "Avangrid" (wrong); ES unscrubbed →
+"Eversource Energy" (right). KEY scrubbed → "KeyBank"; unscrubbed → "KeyCorp". HD was
+identified correctly in **both** arms — a genuine residual leak of the kind D-008 discloses.
+
+**Measured runtime, replacing every earlier estimate:**
+
+| Arm | n (OK) | median | filings | projected |
+|---|---|---|---|---|
+| post_scrubbed | 4 | 50.1 s | 3,358 | 46.7 h |
+| post_unscrubbed | 5 | 46.8 s | 3,358 | 43.7 h |
+| pre_scrubbed | 3 | 63.9 s | 9,148 | 162.4 h |
+| pre_unscrubbed | 5 | 38.0 s | 9,148 | 96.6 h |
+| **Total** | | | **25,012** | **349 h ≈ 14.6 days** |
+
+Against D-006's 8.2 days and the 11.9 days carried in the handoff. The increase is config B
+(~20% slower per event, D-011), the D-012 fit probe, and the H3 probes being counted. These
+medians rest on 3–5 events per arm and the pre_scrubbed figure on only 3, so they are
+indicative, not precise — the unscrubbed arms in particular will run **faster** than
+projected here, because the rehearsal probed all 5 events while the real unscrubbed arms
+probe only 50 in total.
+
+**Trimming, for the never-trimmed headline subsample (D-014 item 1):** PLD was trimmed in
+both post-cutoff arms and is therefore excluded from the headline gap; 3 of 4 post-cutoff
+pairs and 3 of 3 pre-cutoff pairs were usable. Scrubbing *increases* token count — YUM 14,872
+unscrubbed → 15,126 scrubbed — because `COMPANY_A` and `BRAND_33` tokenise longer than the
+names they replace, which is precisely why the two arms cut at different points.
+
+**One unparseable outcome** that is not a bug: ALB on the unscrubbed arm, 12,345 release
+tokens, neither trimmed nor truncated. The model simply did not emit a `SIGNAL` line.
+Unparseable outputs remain non-random and are reported as such (D-003, D-010 item 4).
+
+### Open, and deliberately not resolved here
+
+PLD scored **BULLISH 0.75** in a standalone run this afternoon and **BULLISH 0.80** in the
+rehearsal, on a prompt of identical token length (29,662 release tokens both times), at
+`temperature=0, seed=42`. If scoring is not reproducible, then a duplicate row is not a
+determinism check, the forward test's frozen config does not fix its predictions, and D-003's
+signed continuous signal carries noise in its confidence term. **This is being measured
+before launch, not assumed either way.**
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-23 | §4.5 | Transient engine faults retried up to 3× on the identical prompt | 15% of rehearsal scorings failed on a recoverable fault and were discarded | None — pre-confirmatory |
+| 2026-09-23 | §4.9 | A failed event keeps no resume key; retried next run, given up on after 3 attempts | A transient fault permanently removed an event from every future run | None — pre-confirmatory |
+| 2026-09-23 | §10 | Runtime estimate revised to ~14.6 days from measurement | D-006's 8.2 days predates config B, the D-012 fit probe and the H3 probes | None — pre-confirmatory |
