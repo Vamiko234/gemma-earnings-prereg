@@ -871,13 +871,22 @@ purpose of writing deviations as they happen.
 **Archive record.** Re-submitted after each freeze, gate and launch; every capture kept, not
 replaced, since the sequence of captures is itself the evidence.
 
-| Date submitted | Service | URL archived | Archive link |
-|---|---|---|---|
-| [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
-| [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg/blob/master/prereg.md` | [PENDING] |
-| [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg/blob/master/deviations.md` | [PENDING] |
-| [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg/blob/master/FREEZE_HASHES.txt` | [PENDING] |
-| [PENDING] | Software Heritage | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
+The `raw.githubusercontent.com` URLs are archived rather than the rendered `blob` pages,
+because the raw URL returns the exact bytes the SHA-256 hashes are taken over. The repository
+home page is archived as well, for the rendered README.
+
+| # | Date submitted | Service | URL archived | Archive link |
+|---|---|---|---|---|
+| 1 | [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
+| 2 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/prereg.md` | [PENDING] |
+| 3 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/deviations.md` | [PENDING] |
+| 4 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/scrubber_freeze.json` | [PENDING] |
+| 5 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/excluded_event_ids.csv` | [PENDING] |
+| 6 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/FREEZE_HASHES.txt` | [PENDING] |
+| 7 | [PENDING] | Software Heritage | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
+
+Software Heritage ingests the repository and its whole commit history, so it covers every
+file at once and does not need a row per file.
 
 **Confirmatory scoring does not begin until the two archive submissions above are confirmed
 done and their links recorded here.** Until then every `[PENDING]` is exactly that, and the

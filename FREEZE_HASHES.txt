@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : d4420d6e04463f2e2f5a3c487c12d3d5dcd012e1
+Commit             : 1a46e2af992ef4c2666bc706fa59ce3167c65ef2
 Generated          : 2026-09-23
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -17,7 +17,7 @@ PUBLISHED FILES (this repository) - verify with sha256sum <file>
 ----------------------------------------------------------------------
 2049436b592cca20c7a8000fa92e6a4ef81e2d4a5f4ac4ea85315d3d78e02b37  deviations.md
 051c4e97242f7009e8667d644d4bd76a2543b2a901d54336d8412c3faed5c7e5  excluded_event_ids.csv
-1a96aceb9e0844a1e82dd2890f71d2fb459d68ca10c0cfada21b6684a177341b  prereg.md
+f63bfb24f4941863adf8d81187771e416c9e675e875003160975b3a6397fc5a3  prereg.md
 efa0d769074968c72a84cc1e87e5969ce5e381468f081e6f70f9a9d56afd809c  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
