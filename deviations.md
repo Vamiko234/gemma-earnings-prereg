@@ -1774,3 +1774,135 @@ take new hashes.
 | 2026-09-23 | §7.1 | All tie-capable sorts in `scrub.py` made total (hash-seed independent) | `scrub()` returned a different document on every run; same release, four processes, four outputs | None confirmatory — nothing confirmatory has been scored |
 | 2026-09-23 | §13.1 | Scrubber refrozen with new hashes, gated on audit 12 | `src/scrub.py` changed | None — pre-confirmatory |
 | 2026-09-23 | §11 | Limitations: pre-confirmatory anonymised text is not regenerable from the frozen code | Stated rather than discovered later by a replicator | None |
+
+---
+
+## D-018 · 2026-09-24 · A disk floor, because running out of space mid-run does not fail cleanly
+
+**Why now.** The confirmatory run writes roughly 1.2 GB of raw outputs over about two weeks
+onto a volume that is **98% full — 46 GB free of 1.9 TB**. Ollama's model store alone accounts
+for 89 GB of that.
+
+Running out of space is not a clean failure. A half-written JSONL line, a truncated CSV row or
+a resume key that never reached the disk would be discovered days later, and would look
+exactly like the silent corruption this project has now found four times. The run should stop
+while there is still room to stop safely.
+
+### The rule
+
+`assert_disk_space()` in `scoring.py` — the shared path, so both runners get the same check
+through the same function and cannot drift apart on what "too full" means. **Floor: 20 GB.**
+
+- The **2×2 runner** checks inside `verify_environment()`, which already runs before each arm
+  and every 100 events, and logs free space alongside the environment fingerprint. A breach
+  raises and `main()` exits **3**.
+- The **forward test** checks before scoring and returns **3**, logging the halt and writing
+  `DISK_FULL` to the health line, so a full disk is visible from off-machine in the pushed
+  health log rather than only in a local traceback.
+- `scripts/run_forward_test.bat` documents rc=3 alongside rc=2.
+
+The disk check runs **before** the version lock, because it is the cheaper of the two and
+because it is the one that makes every other artefact — logs, resume keys, the environment log
+itself — unwritable when it fails.
+
+Both halts are resumable by construction: nothing is scored, and the per-event resume keys
+(D-014 item b) mean re-running after freeing space continues exactly where it stopped.
+
+### Models installed, for the record
+
+Only `gemma4:26b-a4b-it-qat` (15 GB, digest `2dd70431afed`) is used by this study. The other
+fourteen models on the machine belong to other projects or to earlier work; the listed sizes
+sum to ~111 GB against an 89 GB store, so blobs are shared and deleting a model reclaims less
+than its listed size. Which to remove is the author's decision, not this study's — several are
+JARVIS's brain.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-24 | §2.1 | Both runners halt cleanly below 20 GB free (exit 3) | The volume is 98% full and the run writes ~1.2 GB; a mid-write exhaustion corrupts silently | None — pre-confirmatory |
+
+---
+
+## D-019 · 2026-09-24 · A dynamic output budget was tested and REJECTED. `num_predict` stays at 6,000
+
+**Recorded because it was tested, not because it changed anything.** A rejected change belongs
+in the log as firmly as an adopted one, or it gets proposed again by whoever next notices the
+unused context.
+
+### The proposal
+
+Two of twenty rehearsal scorings (D-016) went `UNPARSEABLE` by exhausting `num_predict=6000`
+while thinking. With the D-012 trim enforced at 30,000 tokens, a worst-case prompt plus 6,000
+uses 35,738 of the 40,960 context and an ordinary one uses far less, so thousands of context
+tokens sit unused while events are lost to the cap. The candidate rule:
+
+    num_predict = max(6000, min(12000, num_ctx - prompt_tokens - 512))
+
+### The test
+
+All **20 pilot events**, each scored **twice on byte-identical text** (cached, so the only
+thing differing between the two runs is the cap). Pilot events are excluded from every
+confirmatory analysis. `src/test_numpredict.py`,
+`results/numpredict_test/numpredict_comparison.csv`.
+
+| | unparseable | `done_reason=length` | total runtime | median |
+|---|---|---|---|---|
+| fixed 6,000 | **2/20** | 2 | **10.1 min** | 19.1 s |
+| dynamic (10,710–12,000) | **2/20** | 2 | **17.3 min** | 19.1 s |
+
+### The result: no gain, +71% runtime
+
+**Not one event was rescued.** Both cap-hitting events consumed every token they were given
+and still emitted no `SIGNAL` line:
+
+| Event | Release tokens | fixed 6,000 | dynamic | cost |
+|---|---|---|---|---|
+| ALB | 8,753 | UNPARSEABLE, gen 6,000, 84.6 s | UNPARSEABLE, gen **12,000**, 166.1 s | 2.0× |
+| PLD | 29,648 | UNPARSEABLE, gen 6,000, 149.8 s | UNPARSEABLE, gen **10,710**, 419.2 s | 2.8× |
+
+These are not events that needed *slightly* more room. On these releases the model's thinking
+does not terminate within any budget the context allows, so **every finite cap fails and a
+larger one only costs more** — and it costs it on precisely the slowest events, which is the
+worst place to spend it. The median is unchanged at 19.1 s because the entire cost lands on
+the two failures.
+
+Scaled to the confirmatory run, +71% would turn the measured ~213 hours into ~364 hours: from
+about 9 days to about 15, to recover nothing.
+
+### Three further reasons not to adopt
+
+1. **The cap is not a neutral parameter.** Generation changed on events that completed
+   comfortably: SRE 1,174 → 1,307 tokens, WRB 2,027 → 1,530. Adopting the rule would perturb
+   what the model produces on *every* event in order to fix none.
+2. **It runs the context to the edge.** Peak context used rose from 35,738 to **40,448 of
+   40,960** — 512 tokens of headroom, exactly the safety margin and nothing more. Given that
+   Ollama's response to exceeding `num_ctx` is to silently discard half the prompt and report
+   the survivors as if nothing happened (D-012), operating 512 tokens from that boundary
+   trades a visible, honest failure for the invisible kind.
+3. **The floor was never needed.** The computed cap ranged 10,710–12,000 and the 6,000 floor
+   engaged on 0 of 20 events, confirming the trim already guarantees it — as expected, and
+   now measured.
+
+### Decision
+
+**`num_predict` stays at 6,000.** The configuration of D-011 and prereg §13.2 is unchanged and
+needs no refreeze on this account.
+
+The ~10% unparseable rate is therefore accepted and reported as **non-random missingness**,
+consistent with D-003, D-010 item 4 and the D-016 continuation: correlated with thinking
+length rather than release length (ALB is an ordinary 8,753-token release), and unstable under
+trivial input perturbation. It is not treated as random dropout, and the affected events are
+reported with their `done_reason` so a reader can see exactly what happened rather than
+finding a blank cell.
+
+### Incidental
+
+One engine error occurred during the test (NDAQ, fixed-cap run, the fourth transient CUDA
+fault observed) and is counted separately from unparseable answers — conflating an engine
+fault with a model outcome would have credited the dynamic cap with a rescue it did not
+perform. The test script calls Ollama directly and therefore does **not** benefit from
+D-016's retry, which is why the fault surfaced as a bare error here.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-24 | §2 | **No change.** Dynamic `num_predict` tested on 20 events and rejected | Rescued 0 of 2 unparseable events at +71% runtime; perturbs completing events; leaves 512 tokens of context headroom | None |
+| 2026-09-24 | §11 | Unparseable rate (~10%) accepted and reported as non-random missingness | No configuration within the context window removes it | None |

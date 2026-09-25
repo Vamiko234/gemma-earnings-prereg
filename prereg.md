@@ -760,16 +760,16 @@ by anyone who cloned the repository, and two of them (`src/pilot.py`,
 `src/forward_test_daily.py`) had in addition gone stale when D-010, D-011 and D-012 changed
 those files. Both problems are corrected here; the scrubber itself never changed.
 
-**Source freeze at commit `1f15429a82e92e9aaaf555b0dbfd173f07b3cd47`** (refrozen 2026-09-23 under D-017):
+**Source freeze at commit `2ea2d7905e3e62d443919064566522c8346915ff`** (re-recorded 2026-09-24 after D-018's disk guard and D-019's rejected experiment):
 
 | Artefact | SHA-256 (as committed) |
 |---|---|
 | `src/scrub.py` | `fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f` |
-| `src/scoring.py` | `587e712eded80e023e0846bccd01bebb52b52d910cca6d1b124cd3e363199b77` |
+| `src/scoring.py` | `2dbc56a35daede789ed07b810ae153d1e9b4738d22a21627d1bd2aa8e8cb5102` |
 | `src/sue.py` | `c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944` |
 | `src/common.py` | `93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa` |
-| `src/forward_test_daily.py` | `4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988` |
-| `src/run_2x2.py` | `7bb54b2aefeb4375fa27f81e5cbdcab0036a1772d8d988788ca5272e408b67de` |
+| `src/forward_test_daily.py` | `90d3d7a377055414efdd8de3cba9cc1e9691ccf5503056733ffbc741b9155ffd` |
+| `src/run_2x2.py` | `e2b82c07a95216a80a34795354d31abc9bcf6f120854e14a5557ff149889d219` |
 | `src/scrub_audit.py` | `cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42` |
 | `src/pilot.py` | `d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b` |
 | `src/gpulock.py` | `bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d` |
@@ -778,6 +778,7 @@ those files. Both problems are corrected here; the scrubber itself never changed
 | `src/test_shared_path.py` | `f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6` |
 | `src/test_runner.py` | `7a02e4419d663166a5c3de734f456c2a100deb39cf31b057c34229422c77b925` |
 | `src/test_determinism.py` | `b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8` |
+| `src/test_numpredict.py` | `b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322` |
 | `FINANCIAL_STOP` (427 terms) | `6f85fa4c4870ba1db6e983fae74716312ab767793900f4691247ba100f044f2b` |
 | `NAME_SUFFIX_STOP` (28 terms) | `1a7e5e4fbf3174d6ab3fd9a471a13eec2eedf9ddb5896308ad5ca32c5c3da55f` |
 

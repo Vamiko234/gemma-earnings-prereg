@@ -3,11 +3,11 @@
   "refreeze": "D-011 config B adopted",
   "files": {
     "src/scrub.py": "fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f",
-    "src/scoring.py": "587e712eded80e023e0846bccd01bebb52b52d910cca6d1b124cd3e363199b77",
+    "src/scoring.py": "2dbc56a35daede789ed07b810ae153d1e9b4738d22a21627d1bd2aa8e8cb5102",
     "src/sue.py": "c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944",
     "src/common.py": "93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa",
-    "src/forward_test_daily.py": "4d57c38d94614cbf47799753363adc3aaf9d328e8fe589de83233a53b29e7988",
-    "src/run_2x2.py": "7bb54b2aefeb4375fa27f81e5cbdcab0036a1772d8d988788ca5272e408b67de",
+    "src/forward_test_daily.py": "90d3d7a377055414efdd8de3cba9cc1e9691ccf5503056733ffbc741b9155ffd",
+    "src/run_2x2.py": "e2b82c07a95216a80a34795354d31abc9bcf6f120854e14a5557ff149889d219",
     "src/scrub_audit.py": "cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42",
     "src/pilot.py": "d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b",
     "src/gpulock.py": "bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d",
@@ -15,7 +15,8 @@
     "src/test_trim.py": "aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827",
     "src/test_shared_path.py": "f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6",
     "src/test_runner.py": "7a02e4419d663166a5c3de734f456c2a100deb39cf31b057c34229422c77b925",
-    "src/test_determinism.py": "b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8"
+    "src/test_determinism.py": "b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8",
+    "src/test_numpredict.py": "b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322"
   },
   "financial_stop": {
     "n": 427,
@@ -514,5 +515,5 @@
   },
   "trim_tokens": 30000,
   "hash_convention": "SHA-256 of the file as committed (LF). Reproduce with: git show <commit>:<path> | sha256sum",
-  "hashes_at_commit": "1f15429a82e92e9aaaf555b0dbfd173f07b3cd47"
+  "hashes_at_commit": "2ea2d7905e3e62d443919064566522c8346915ff"
 }
