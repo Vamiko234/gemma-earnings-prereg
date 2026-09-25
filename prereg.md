@@ -630,6 +630,25 @@ Every check and its result is written to `audit_report.md`, failures included.
 
 ---
 
+### 9.2 Missingness is reported by cause, machine apart from model (D-020)
+
+Every event that produced no usable signal is reported under the cause that produced it. The
+categories are kept apart because they mean different things and because folding them together
+would let a bad GPU night look like a property of the earnings releases:
+
+| Reported metric | What it means |
+|---|---|
+| `unparseable` | The model answered but emitted no `SIGNAL` line - in practice it exhausted `num_predict` while thinking (D-019). A property of the release and the model. |
+| `transient_faults_seen` | Events that hit at least one transient engine fault (CUDA illegal memory access and similar). A property of the machine. |
+| `recovered_on_retry` | Of those, how many then scored. The retry of D-016 earning its keep, and the number that shows how much of the fault rate was invisible before it existed. |
+| `gave_up_transient` | Events abandoned after three attempts on a transient fault. Genuinely lost, and reported as lost rather than as a blank cell. |
+| `EXCLUDED_FETCH` | The release could not be retrieved from EDGAR. |
+
+All five are written to the per-arm progress file continuously and **reported at Gate 4**,
+alongside the window-completeness counts. The observed transient-fault rate across the
+rehearsals was volatile - 15% in one run of 20 scorings and 0% in another - so it is reported
+as a measured count per arm, never as an assumed rate.
+
 ## 10. Outputs, ledger, and verification
 
 - `ledger.csv` — every number destined for the paper, with source file, row, column, and the
@@ -760,23 +779,23 @@ by anyone who cloned the repository, and two of them (`src/pilot.py`,
 `src/forward_test_daily.py`) had in addition gone stale when D-010, D-011 and D-012 changed
 those files. Both problems are corrected here; the scrubber itself never changed.
 
-**Source freeze at commit `2ea2d7905e3e62d443919064566522c8346915ff`** (re-recorded 2026-09-24 after D-018's disk guard and D-019's rejected experiment):
+**Source freeze at commit `ce14434ccfa9a8b57791017b8681cf5f4b24b64a`** (re-recorded 2026-09-24 after D-020's archive gate):
 
 | Artefact | SHA-256 (as committed) |
 |---|---|
 | `src/scrub.py` | `fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f` |
-| `src/scoring.py` | `2dbc56a35daede789ed07b810ae153d1e9b4738d22a21627d1bd2aa8e8cb5102` |
+| `src/scoring.py` | `065d913a2b36ef8a1c0981137780f0c9e0ff464ff60dd39b8f438a7cd0e767e5` |
 | `src/sue.py` | `c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944` |
 | `src/common.py` | `93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa` |
-| `src/forward_test_daily.py` | `90d3d7a377055414efdd8de3cba9cc1e9691ccf5503056733ffbc741b9155ffd` |
-| `src/run_2x2.py` | `e2b82c07a95216a80a34795354d31abc9bcf6f120854e14a5557ff149889d219` |
+| `src/forward_test_daily.py` | `5b337715b6e0786f18ab7b6af302241abecbc12b0839d0331398f9e8f6a3418f` |
+| `src/run_2x2.py` | `b14c36a219cf46f8d091ce95f1727093f0907844952100f1d08f335ddaa5a4be` |
 | `src/scrub_audit.py` | `cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42` |
 | `src/pilot.py` | `d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b` |
 | `src/gpulock.py` | `bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d` |
 | `src/identity_match.py` | `863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546` |
 | `src/test_trim.py` | `aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827` |
 | `src/test_shared_path.py` | `f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6` |
-| `src/test_runner.py` | `7a02e4419d663166a5c3de734f456c2a100deb39cf31b057c34229422c77b925` |
+| `src/test_runner.py` | `baafa77e28b424686e50b8f90262e67acac18c5ca57102913158bcf3000b2c06` |
 | `src/test_determinism.py` | `b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8` |
 | `src/test_numpredict.py` | `b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322` |
 | `FINANCIAL_STOP` (427 terms) | `6f85fa4c4870ba1db6e983fae74716312ab767793900f4691247ba100f044f2b` |

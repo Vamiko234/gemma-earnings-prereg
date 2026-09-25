@@ -1906,3 +1906,92 @@ D-016's retry, which is why the fault surfaced as a bare error here.
 |---|---|---|---|---|
 | 2026-09-24 | §2 | **No change.** Dynamic `num_predict` tested on 20 events and rejected | Rescued 0 of 2 unparseable events at +71% runtime; perturbs completing events; leaves 512 tokens of context headroom | None |
 | 2026-09-24 | §11 | Unparseable rate (~10%) accepted and reported as non-random missingness | No configuration within the context window removes it | None |
+
+---
+
+## D-020 · 2026-09-24 · The launch gate was prose. Now it is code. And engine faults become their own metric
+
+### (1) The forward test would have scored on 1 October regardless
+
+prereg §13.3 says confirmatory scoring does not begin until the pre-registration has been
+archived by parties independent of the author. **Nothing read that sentence.** The forward
+test gated on disk (D-018, rc=3) and the version lock (§2.1, rc=2) and nothing else.
+
+So on 1 October, with the archive links still `[PENDING]`, the job would have polled EDGAR,
+found candidates, scored them, hashed them, pushed them and reported success — producing
+confirmatory events whose only timestamp was GitHub's own commit date. The forward test is the
+single arm whose entire value rests on a date somebody else can vouch for, and it was the one
+arm with no check.
+
+This is the same failure shape as D-014 item e, where D-011 claimed the runner checked the GPU
+lock and no code did. **A rule written only in prose is not a rule**, and this project has now
+produced that mistake twice.
+
+**The gate.** `data/archive_record.json` holds the submissions; `assert_archives_recorded()`
+in `scoring.py` — the shared path, so both runners gate identically — requires:
+
+- at least one Wayback capture, identified by a `web.archive.org/web/…` link
+- at least one Software Heritage snapshot, identified by an `swh:1:snp:…` id
+- a `date_submitted` on every entry
+- **and** that prereg §13.3's table contains no `[PENDING]` rows
+
+The last one is a cross-check between two representations that must both be complete, which is
+harder to fool than either alone. The file ships empty on purpose: the gate is **closed right
+now**, and `src/test_runner.py` asserts that the runner refuses to score and writes nothing
+when it fires.
+
+**What happens on 1 October, by exit code:**
+
+| Condition | Forward test |
+|---|---|
+| Archives recorded | scores normally, logs `independent timestamp OK (n Wayback, m Software Heritage)` |
+| Archives pending | **halts without scoring, rc=4**, health line `ARCHIVE_PENDING`, pushed so the gap is visible off-machine |
+| Archives pending, `--allow-missing-archives` | scores, and marks **every** event `VOID_NO_INDEPENDENT_TIMESTAMP` |
+
+**Why an override exists at all.** Halting is not free. A release scored after the next open
+is worthless to the forward test, so a day spent halted is a day of events permanently lost —
+they cannot be scored retrospectively and claimed as prospective. The override therefore
+exists, but it labels what it produces instead of pretending, exactly as §2.1's
+`VOID_ENVIRONMENT_CHANGE` does. Voided events are retained as evidence and excluded from the
+confirmatory forward-test analysis.
+
+**The default is to halt**, because the season runs 1 October to 30 November and losing a few
+early days costs far less than weakening the arm that the whole prospective claim rests on.
+
+### (2) Transient engine faults are now their own reported metric
+
+The transient CUDA faults of D-016 were being counted nowhere. Four have now been observed
+across rehearsals and the D-019 experiment, at a volatile rate — 15% of 20 scorings in one
+rehearsal, 0% in the next. Folding them into `unparseable` would let a bad GPU night look like
+a property of the earnings releases.
+
+Five separate numbers, written to the per-arm progress file continuously and reported at
+**Gate 4** (prereg §9.2):
+
+| Metric | Meaning |
+|---|---|
+| `unparseable` | The model answered but emitted no `SIGNAL` line — in practice exhausted `num_predict` while thinking (D-019). **The model.** |
+| `transient_faults_seen` | Events that hit at least one transient engine fault. **The machine.** |
+| `recovered_on_retry` | Of those, how many then scored — the D-016 retry earning its keep, and the number that shows how much of the fault rate was invisible before the retry existed |
+| `gave_up_transient` | Abandoned after three attempts; reported as lost rather than left as a blank cell |
+| `EXCLUDED_FETCH` | The release could not be retrieved from EDGAR |
+
+Rows now carry `engine_retries` and `engine_retry_detail`, and a give-up on a transient fault
+is stored as `SCORE_FAILED_TRANSIENT` rather than `SCORE_FAILED`, so the two are separable
+after the fact without parsing error strings. `test_fault_counts_separate_machine_from_model`
+pins the arithmetic, including that `unparseable` excludes engine faults.
+
+The rate is reported as a **measured count per arm, never as an assumed rate** — two rehearsals
+of the same twenty events gave 15% and 0%, so any single figure would be fiction.
+
+### Housekeeping
+
+Disk: the author removed six unused models. The store went 89 GB → 52 GB and free space 46 GB
+→ 113 GB. The study model `gemma4:26b-a4b-it-qat` digest `2dd70431afed` is intact, the
+environment fingerprint is unchanged, and the JARVIS models were deliberately kept.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-24 | §13.3 | The archive gate is enforced in code; both runners halt (rc=4) without a recorded independent timestamp | The rule existed only as prose; the forward test would have scored on 1 October regardless | None — nothing confirmatory scored |
+| 2026-09-24 | §4.8 | `--allow-missing-archives` scores but marks every event `VOID_NO_INDEPENDENT_TIMESTAMP` | A halted day loses its events permanently; the override labels rather than pretends | None |
+| 2026-09-24 | §9.2 (new) | Missingness reported by cause, engine faults separate from unparseable, at Gate 4 | Folding a GPU fault into an unparseable count would attribute a machine failure to the releases | None |
