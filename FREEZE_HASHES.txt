@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : c2bcbd3cb9a718655daa822ec7dcdcead1d1bf0a
+Commit             : b4364e4ac92a07a0b394839df1eaaf4835ecd07c
 Generated          : 2026-09-24
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
