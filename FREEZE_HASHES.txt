@@ -2,8 +2,8 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : b4364e4ac92a07a0b394839df1eaaf4835ecd07c
-Generated          : 2026-09-24
+Commit             : b26feee5570e4fffc259c37921a5d704c6d0a385
+Generated          : 2026-09-26
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
 endings. Reproduce any line with:
@@ -13,12 +13,22 @@ endings. Reproduce any line with:
 A hash taken from a Windows working tree will NOT match: this repository is
 developed with core.autocrlf=true, which stores LF and checks out CRLF.
 
-PUBLISHED FILES (this repository) - verify with sha256sum <file>
+PUBLISHED FILES (this repository)
 ----------------------------------------------------------------------
-066547950b24e020681aaf79b599dbb868ce0286e8380058e8e45a723cd0bd43  deviations.md
-051c4e97242f7009e8667d644d4bd76a2543b2a901d54336d8412c3faed5c7e5  excluded_event_ids.csv
-861cd4d0ee40dbfbe8443cbcade1afce6c00100da15733ab9c62d3ad33ca8d95  prereg.md
-a4bc36121cda68e2f1b4710bd0d635d8e22132b0ba8207f01aeccbca9b31f5b4  scrubber_freeze.json
+Hashed with LF line endings - the bytes git stores and raw.githubusercontent.com
+serves, so these match what an archive of the raw URL captured. Verify with:
+
+    git show HEAD:<file> | sha256sum          (in a clone of this repository)
+    curl -sL --compressed <raw URL> | sha256sum
+
+NOT with `sha256sum <file>` on a Windows checkout: this repository is cloned with
+core.autocrlf=true, which writes CRLF to the working tree and would give a different
+hash for every file. That mistake was in this manifest until 2026-09-26 (D-021).
+
+028c2c0aae73ddd69695e0385b0cd566bd02d734c1a274d5301f07be256db44c  deviations.md
+13edbf15e950846795ff94488b5d0da6a594d3e0578fd838c83d2fd912854927  excluded_event_ids.csv
+1d1dab5532199670e9727714fc8eefb3c4027b4b4fe35abc29e03dbe399fdd4e  prereg.md
+f7550ed5188503d46b7f4b829d0dbaddb3cc167d0b08ba34563ebf0b50414921  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -39,6 +49,6 @@ bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d  src/gpulock.py
 863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546  src/identity_match.py
 aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827  src/test_trim.py
 f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6  src/test_shared_path.py
-baafa77e28b424686e50b8f90262e67acac18c5ca57102913158bcf3000b2c06  src/test_runner.py
+4c7ec3a19e6a33c0a06a1d81eb4adddc4583972982ae13a78fb93736eae751e4  src/test_runner.py
 b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8  src/test_determinism.py
 b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322  src/test_numpredict.py

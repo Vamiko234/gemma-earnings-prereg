@@ -914,20 +914,45 @@ home page is archived as well, for the rendered README.
 
 | # | Date submitted | Service | URL archived | Archive link |
 |---|---|---|---|---|
-| 1 | [PENDING] | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
-| 2 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/prereg.md` | [PENDING] |
-| 3 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/deviations.md` | [PENDING] |
-| 4 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/scrubber_freeze.json` | [PENDING] |
-| 5 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/excluded_event_ids.csv` | [PENDING] |
-| 6 | [PENDING] | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/FREEZE_HASHES.txt` | [PENDING] |
-| 7 | [PENDING] | Software Heritage | `https://github.com/Vamiko234/gemma-earnings-prereg` | [PENDING] |
+| 1 | **2026-09-26** | Wayback Machine | `https://github.com/Vamiko234/gemma-earnings-prereg` | [capture](https://web.archive.org/web/20260926170333/https://github.com/Vamiko234/gemma-earnings-prereg) |
+| 2 | **2026-09-26** | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/prereg.md` | [capture](https://web.archive.org/web/20260926170706/https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/prereg.md) |
+| 3 | **2026-09-26** | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/deviations.md` | [capture](https://web.archive.org/web/20260926170725/https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/deviations.md) |
+| 4 | **2026-09-26** | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/scrubber_freeze.json` | [capture](https://web.archive.org/web/20260926170744/https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/scrubber_freeze.json) |
+| 5 | **2026-09-26** | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/excluded_event_ids.csv` | [capture](https://web.archive.org/web/20260926170801/https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/excluded_event_ids.csv) |
+| 6 | **2026-09-26** | Wayback Machine | `https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/FREEZE_HASHES.txt` | [capture](https://web.archive.org/web/20260926170803/https://raw.githubusercontent.com/Vamiko234/gemma-earnings-prereg/master/FREEZE_HASHES.txt) |
+| 7 | **2026-09-26** | Software Heritage | `https://github.com/Vamiko234/gemma-earnings-prereg` | `swh:1:snp:a3d93f0fa398f75017d5bf1e11b847dc84b3c5cc` |
+
+**All seven verified on 2026-09-26, not merely submitted.** Each Wayback capture was fetched
+back and its bytes compared against what the mirror serves: all six match exactly (prereg.md
+52,022 bytes, deviations.md 115,263, scrubber_freeze.json 10,167, excluded_event_ids.csv
+1,502, FREEZE_HASHES.txt 2,728; the repository home page is a rendered page with no byte hash
+to compare). The Software Heritage visit is `status=full` and its snapshot's
+`refs/heads/master` points to `5592bdd2761743030d0957419cad9b050965942f`, which **is** the
+public mirror's HEAD - the mirror of private commit `b4364e4ac92a`.
+
+**What these captures attest.** The pre-registration and the deviation log, through **D-020**,
+existed in public in this exact form on 2026-09-26, with **zero confirmatory events scored**.
+That is the claim the study needs and it is now held by two parties who are not the author.
+
+**On the circularity.** Recording these links changes the very files that were archived, so no
+capture can ever contain its own provenance. The 2026-09-26 captures are therefore the
+*evidential* ones: they predate this record and predate any result. Later captures - including
+the one taken after these links were written in - are housekeeping, so that a reader landing
+on the archived document can see where it was archived. They are not what the "pre" in
+pre-registration rests on.
 
 Software Heritage ingests the repository and its whole commit history, so it covers every
 file at once and does not need a row per file.
 
-**Confirmatory scoring does not begin until the two archive submissions above are confirmed
-done and their links recorded here.** Until then every `[PENDING]` is exactly that, and the
-independence claim is unproven rather than assumed.
+**Confirmatory scoring does not begin until the archive submissions above are confirmed done
+and their links recorded here.** This is enforced in code, not left to memory:
+`assert_archives_recorded()` in `src/scoring.py` halts both runners (exit 4) unless this
+table is complete and `data/archive_record.json` records a Wayback capture and a Software
+Heritage snapshot, each dated. It was prose until 2026-09-24, and prose that no code reads is
+not a rule (D-020).
+
+**Satisfied 2026-09-26.** The gate is open on the strength of the seven verified captures
+above. It closes again automatically if the record and this table ever disagree.
 
 ---
 

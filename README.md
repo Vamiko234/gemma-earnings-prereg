@@ -29,10 +29,10 @@ Everything here is mirrored from the private working repository
 [github.com/Vamiko234/gemma-earnings-study](https://github.com/Vamiko234/gemma-earnings-study) at commit:
 
 ```
-b4364e4ac92a07a0b394839df1eaaf4835ecd07c
+b26feee5570e4fffc259c37921a5d704c6d0a385
 ```
 
-Mirrored on 2026-09-24.
+Mirrored on 2026-09-26.
 
 The working repository is private because it contains the model prompts, the extracted
 release text, and the raw model outputs. Nothing in this repository depends on that: the

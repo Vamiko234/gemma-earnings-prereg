@@ -1995,3 +1995,86 @@ environment fingerprint is unchanged, and the JARVIS models were deliberately ke
 | 2026-09-24 | §13.3 | The archive gate is enforced in code; both runners halt (rc=4) without a recorded independent timestamp | The rule existed only as prose; the forward test would have scored on 1 October regardless | None — nothing confirmatory scored |
 | 2026-09-24 | §4.8 | `--allow-missing-archives` scores but marks every event `VOID_NO_INDEPENDENT_TIMESTAMP` | A halted day loses its events permanently; the override labels rather than pretends | None |
 | 2026-09-24 | §9.2 (new) | Missingness reported by cause, engine faults separate from unparseable, at Gate 4 | Folding a GPU fault into an unparseable count would attribute a machine failure to the releases | None |
+
+---
+
+## D-021 · 2026-09-26 · The archive gate is satisfied. And the manifest was hashing the wrong bytes
+
+### The gate is open
+
+Seven captures recorded in `data/archive_record.json` and prereg §13.3, and **verified rather
+than trusted**:
+
+| Service | Verified how |
+|---|---|
+| Wayback × 5 raw files | fetched back and compared byte for byte against what the mirror serves — all five identical |
+| Wayback × 1 repo home page | HTTP 200; a rendered page, so no byte hash applies |
+| Software Heritage | visit 1 `status=full`; snapshot `refs/heads/master` → `5592bdd276…`, **identical to the public mirror HEAD** |
+
+Snapshot: `swh:1:snp:a3d93f0fa398f75017d5bf1e11b847dc84b3c5cc`, save request 421991555, visit
+2026-09-26T17:17:28Z. The archived mirror commit `5592bdd276…` is the mirror of private commit
+`b4364e4ac92a`, containing deviations through **D-020**, with **zero confirmatory events
+scored**.
+
+`assert_archives_recorded()` now returns "6 Wayback, 1 Software Heritage" and both runners
+pass their pre-flight. The forward test will score on 1 October.
+
+### Two things the verification exposed
+
+**1. `FREEZE_HASHES.txt` was hashing the wrong bytes.** Its published-file section was computed
+with `sha256sum` over the **Windows working tree**, which is CRLF, while the repository is
+cloned with `core.autocrlf=true` — so git stores LF and `raw.githubusercontent.com` serves LF.
+Every one of the four published-file hashes therefore disagreed with the file anyone would
+actually download:
+
+| File | manifest said (CRLF) | actually served (LF) |
+|---|---|---|
+| `prereg.md` | `861cd4d0ee40dbfb…` | `28996b0c059abe0c…` |
+| `deviations.md` | `066547950b24e020…` | `654318f02c3578ba…` |
+| `scrubber_freeze.json` | `a4bc36121cda68e2…` | `2f5db4a4150a6c35…` |
+| `excluded_event_ids.csv` | `051c4e97242f7009…` | `13edbf15e9508467…` |
+
+This is the **third** appearance of the same CRLF defect: §13.1's hash table (D-013), then
+`scrubber_freeze.json` (D-013), now the published manifest. In each case the hash was taken
+from the working tree on a Windows machine and could not be reproduced by anybody else — which
+defeats the entire purpose of publishing a hash.
+
+`write_manifest()` now normalises CRLF to LF before hashing, and the manifest states the two
+commands that reproduce it (`git show HEAD:<file> | sha256sum` in a clone, or
+`curl -sL --compressed <raw URL> | sha256sum`) together with an explicit warning that
+`sha256sum <file>` on a Windows checkout will not match. To make the mistake impossible to
+reintroduce through an escaped-string slip, the normalisation is written as
+`replace(bytes([13, 10]), bytes([10]))` — byte values, no escape sequences.
+
+**2. Wayback serves the original compressed payload.** A `web.archive.org/web/<ts>id_/…` fetch
+returns the resource exactly as captured, **including its gzip Content-Encoding**. A naive
+`curl -sL -o file` therefore saves gzip bytes and every hash comparison fails for a reason that
+has nothing to do with the archive. The first verification pass produced five mismatches from
+precisely this, and the tell was the file starting `1f 8b 08`. The fetch must pass
+`--compressed` (or pipe through `gunzip`). Recorded in `archive_record.json` so the next person
+to verify these links does not lose an hour to it.
+
+### The circularity, stated plainly
+
+Recording the archive links changes the very files that were archived, so **no capture can
+ever contain its own provenance.** The 2026-09-26 captures are therefore the *evidential*
+ones: they predate this record and predate every result. Captures taken after the links are
+written in are housekeeping — they let a reader who lands on the archived document see where it
+was archived — and are not what the "pre" in pre-registration rests on.
+
+Files changed by recording, and therefore needing a fresh capture for that housekeeping
+purpose: `prereg.md`, `deviations.md`, `scrubber_freeze.json`, `FREEZE_HASHES.txt`, and the
+repository home page. `excluded_event_ids.csv` is unchanged and its capture stands.
+
+### One test rewritten
+
+`test_the_archive_gate_stops_the_runner` originally asserted that the real archive record was
+incomplete. That passed only while the archives were pending and failed the moment they were
+recorded. It now points the gate at an empty temporary record and checks both directions —
+empty closes it, complete opens it — so it keeps protecting the mechanism after launch. **A
+test that expires is a test that stops protecting anything.**
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-26 | §13.3 | Seven archive captures recorded and verified; the gate is satisfied | Independent timestamps now exist and were checked, not assumed | None |
+| 2026-09-26 | §13.1 | `FREEZE_HASHES.txt` published-file hashes normalised to LF, with reproduction commands | The CRLF hashes matched nothing anyone could download — third instance of this defect | None |
