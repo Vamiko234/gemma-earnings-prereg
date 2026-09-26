@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : b26feee5570e4fffc259c37921a5d704c6d0a385
+Commit             : 7f46fd16fa1faf2bb7e42a6e207eb7b4fd474051
 Generated          : 2026-09-26
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -27,7 +27,7 @@ hash for every file. That mistake was in this manifest until 2026-09-26 (D-021).
 
 028c2c0aae73ddd69695e0385b0cd566bd02d734c1a274d5301f07be256db44c  deviations.md
 13edbf15e950846795ff94488b5d0da6a594d3e0578fd838c83d2fd912854927  excluded_event_ids.csv
-1d1dab5532199670e9727714fc8eefb3c4027b4b4fe35abc29e03dbe399fdd4e  prereg.md
+957012a8f33b082ad036278155c2ca4283d17e515755820484f1fb6526ca5afb  prereg.md
 f7550ed5188503d46b7f4b829d0dbaddb3cc167d0b08ba34563ebf0b50414921  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)

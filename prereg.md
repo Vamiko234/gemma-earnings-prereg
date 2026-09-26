@@ -779,7 +779,7 @@ by anyone who cloned the repository, and two of them (`src/pilot.py`,
 `src/forward_test_daily.py`) had in addition gone stale when D-010, D-011 and D-012 changed
 those files. Both problems are corrected here; the scrubber itself never changed.
 
-**Source freeze at commit `ce14434ccfa9a8b57791017b8681cf5f4b24b64a`** (re-recorded 2026-09-24 after D-020's archive gate):
+**Source freeze at commit `b26feee5570e4fffc259c37921a5d704c6d0a385`** (re-recorded 2026-09-26, D-021):
 
 | Artefact | SHA-256 (as committed) |
 |---|---|
@@ -795,7 +795,7 @@ those files. Both problems are corrected here; the scrubber itself never changed
 | `src/identity_match.py` | `863f2e952d55d8bb1cc2898e1fbf54afa585c6b4b7c8ca34c2dd664b768d1546` |
 | `src/test_trim.py` | `aab5e2d68a189b136b010603aaa7fbe296abc2aca6faff2d9480b5e0aec14827` |
 | `src/test_shared_path.py` | `f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6` |
-| `src/test_runner.py` | `baafa77e28b424686e50b8f90262e67acac18c5ca57102913158bcf3000b2c06` |
+| `src/test_runner.py` | `4c7ec3a19e6a33c0a06a1d81eb4adddc4583972982ae13a78fb93736eae751e4` |
 | `src/test_determinism.py` | `b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8` |
 | `src/test_numpredict.py` | `b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322` |
 | `FINANCIAL_STOP` (427 terms) | `6f85fa4c4870ba1db6e983fae74716312ab767793900f4691247ba100f044f2b` |
