@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : 7f46fd16fa1faf2bb7e42a6e207eb7b4fd474051
+Commit             : 82ed23703b1d35b54c03429d7641386535c6cbfe
 Generated          : 2026-09-26
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -25,10 +25,10 @@ NOT with `sha256sum <file>` on a Windows checkout: this repository is cloned wit
 core.autocrlf=true, which writes CRLF to the working tree and would give a different
 hash for every file. That mistake was in this manifest until 2026-09-26 (D-021).
 
-028c2c0aae73ddd69695e0385b0cd566bd02d734c1a274d5301f07be256db44c  deviations.md
+13a90e5ffcca43a7e658b35ce1ba07848c894b4704a60fec667da255a0976f7e  deviations.md
 13edbf15e950846795ff94488b5d0da6a594d3e0578fd838c83d2fd912854927  excluded_event_ids.csv
-957012a8f33b082ad036278155c2ca4283d17e515755820484f1fb6526ca5afb  prereg.md
-f7550ed5188503d46b7f4b829d0dbaddb3cc167d0b08ba34563ebf0b50414921  scrubber_freeze.json
+6098f1d1b26250e389b077a4724c7dc6e95d09667e27597908b1f1c538fa61d4  prereg.md
+f238c35469957de35bcaaf403189141bac24db41421a48f5d684692650cb9ce3  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -52,3 +52,4 @@ f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6  src/test_share
 4c7ec3a19e6a33c0a06a1d81eb4adddc4583972982ae13a78fb93736eae751e4  src/test_runner.py
 b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8  src/test_determinism.py
 b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322  src/test_numpredict.py
+d6ea6022190ed2e7ca3a5318f7fd364951c4e7c7c9027a998874ef0bfeefde15  src/test_price_embargo.py

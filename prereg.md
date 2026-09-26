@@ -779,7 +779,7 @@ by anyone who cloned the repository, and two of them (`src/pilot.py`,
 `src/forward_test_daily.py`) had in addition gone stale when D-010, D-011 and D-012 changed
 those files. Both problems are corrected here; the scrubber itself never changed.
 
-**Source freeze at commit `b26feee5570e4fffc259c37921a5d704c6d0a385`** (re-recorded 2026-09-26, D-021):
+**Source freeze at commit `aa3309ca91b230c4555e72a9d106fc2be08415e0`** (re-recorded 2026-09-26, D-022):
 
 | Artefact | SHA-256 (as committed) |
 |---|---|
@@ -798,6 +798,7 @@ those files. Both problems are corrected here; the scrubber itself never changed
 | `src/test_runner.py` | `4c7ec3a19e6a33c0a06a1d81eb4adddc4583972982ae13a78fb93736eae751e4` |
 | `src/test_determinism.py` | `b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8` |
 | `src/test_numpredict.py` | `b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322` |
+| `src/test_price_embargo.py` | `d6ea6022190ed2e7ca3a5318f7fd364951c4e7c7c9027a998874ef0bfeefde15` |
 | `FINANCIAL_STOP` (427 terms) | `6f85fa4c4870ba1db6e983fae74716312ab767793900f4691247ba100f044f2b` |
 | `NAME_SUFFIX_STOP` (28 terms) | `1a7e5e4fbf3174d6ab3fd9a471a13eec2eedf9ddb5896308ad5ca32c5c3da55f` |
 

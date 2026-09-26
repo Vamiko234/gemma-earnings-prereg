@@ -16,7 +16,8 @@
     "src/test_shared_path.py": "f94fb30630c85e459521a15cb74507d538038dff1eadac9c1896bb18e9e1f3c6",
     "src/test_runner.py": "4c7ec3a19e6a33c0a06a1d81eb4adddc4583972982ae13a78fb93736eae751e4",
     "src/test_determinism.py": "b411d0aac0215b9881900eb21afddf33e33ebf7bed3abfb057611ddfbb2b41e8",
-    "src/test_numpredict.py": "b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322"
+    "src/test_numpredict.py": "b75ee623d8d0b2cfbc4b8c30775a7342eda0a43f8bfb7ab9f4c1063916416322",
+    "src/test_price_embargo.py": "d6ea6022190ed2e7ca3a5318f7fd364951c4e7c7c9027a998874ef0bfeefde15"
   },
   "financial_stop": {
     "n": 427,
@@ -515,5 +516,5 @@
   },
   "trim_tokens": 30000,
   "hash_convention": "SHA-256 of the file as committed (LF). Reproduce with: git show <commit>:<path> | sha256sum",
-  "hashes_at_commit": "b26feee5570e4fffc259c37921a5d704c6d0a385"
+  "hashes_at_commit": "c9383684a04de42cc4112c4312550021a04ea4ff"
 }

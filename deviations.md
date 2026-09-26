@@ -2078,3 +2078,78 @@ test that expires is a test that stops protecting anything.**
 |---|---|---|---|---|
 | 2026-09-26 | §13.3 | Seven archive captures recorded and verified; the gate is satisfied | Independent timestamps now exist and were checked, not assumed | None |
 | 2026-09-26 | §13.1 | `FREEZE_HASHES.txt` published-file hashes normalised to LF, with reproduction commands | The CRLF hashes matched nothing anyone could download — third instance of this defect | None |
+
+---
+
+## D-022 · 2026-09-26 · Tiingo: an age problem and a licence problem. Prices embargoed; the 2×2 launches without them
+
+### Two separate problems, found by reading the terms
+
+**1. Age.** Tiingo's Terms of Use require the legal capacity to contract. The author is 15.
+The account therefore moves to a parent's account, exactly as OSF did (D-013). This is the
+**second** blocker in this project caused by an age requirement, and the pattern is now worth
+stating: check the terms of a service before building a dependency on it, not after.
+
+**2. Licence.** The free plan grants **personal and internal use with no redistribution.**
+That is a constraint on what the *paper* may contain, not merely on what the repository may
+hold. Whether publishing aggregate statistics derived from the data is permitted is being put
+to Tiingo in writing. Until they answer, the conservative reading governs.
+
+### The embargo
+
+**Nothing price-derived appears in anything public** — paper, poster, repository, slide —
+until Tiingo confirms in writing. Enforced in `scripts/sync_public_prereg.py`, not left to
+vigilance, because a licence breach discovered after publication cannot be taken back:
+
+- **By filename**, on both the source and the published path, so renaming on the way out does
+  not launder it: `price`, `tiingo`, `ohlc`, `bars`, `quotes`, `adjclose`, `return`, `abret`,
+  `spy`.
+- **By content**, two ways. Tiingo's own field names (`adjClose`, `adjOpen`, `divCash`,
+  `splitFactor`, …) refuse on **two or more distinct hits**, because one alone can be prose —
+  this document discusses `adjClose`. A strict list refuses on a **single hit**, for things
+  that cannot appear innocently: `abret_21d`-style output columns, `api.tiingo.com`, a token.
+- **Credentials**: a `TIINGO_API_KEY`-shaped assignment is refused outright.
+
+`src/test_price_embargo.py` actively tries to publish price data four ways — a real Tiingo
+JSON payload, a file named like prices, a derived per-event return column, and a price file
+renamed on the way out — and requires each to be refused. **A guard nobody has tried to get
+past is not a guard.**
+
+It also tests the converse, which matters as much: prose mentioning Tiingo and `adjClose` once
+must still publish. If the embargo blocked the pre-registration from describing its own data
+source, the first person to hit that would switch the check off, and then it would protect
+nothing.
+
+The first version of the guard **failed one of its own tests**: `event_returns.csv` slipped
+through, because `\breturns?\b` never matches inside `event_returns` — an underscore is a word
+character, so there is no boundary before "returns". Caught before anything was published.
+
+### The launch gate loses a condition it never needed
+
+GPU scoring reads EDGAR text and writes signals. **It does not touch prices.** Realized
+abnormal returns are joined at analysis time, which is after all four arms complete (D-014
+item 4). Holding the 2×2 hostage to a Tiingo question would cost days of GPU time to protect
+nothing.
+
+So the gate splits:
+
+| Gate | Blocks | Condition |
+|---|---|---|
+| **Scoring gate** | the 2×2 and the forward test | archive links recorded (D-020) and disk above 20 GB (D-018) — **both satisfied** |
+| **Price gate** | the price pull, and any public artefact containing price-derived data | a parent-held Tiingo account, and Tiingo's written answer on aggregate statistics — **neither satisfied** |
+
+This is a narrowing of scope, not a relaxation of standards: nothing that was checked before
+is unchecked now. Prices were never an input to a signal, and §4.9's rule that no analysis
+runs until all four arms finish is unchanged.
+
+**Consequence if Tiingo answers no:** the study still has its signals, its H3 probes and its
+scrubbed/unscrubbed gaps. What it would lose is the ability to publish realized-return
+results from Tiingo data, which would mean sourcing prices elsewhere before publication. That
+is a publication problem, not a scoring problem, and it is better discovered now than after
+fourteen days of GPU time.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-26 | §3.1 | Tiingo account moves to a parent; free-plan licence treated as no-redistribution until Tiingo answers | Terms require legal capacity to contract; author is 15 | None |
+| 2026-09-26 | §13.3 | The mirror sync refuses price data by filename, by content, and by credential shape | A licence breach cannot be withdrawn once published | None |
+| 2026-09-26 | §4.8 | Tiingo removed from the scoring gate; retained as a gate on the price pull and on any public price-derived artefact | Scoring never reads prices; returns are joined after all arms finish | None |
