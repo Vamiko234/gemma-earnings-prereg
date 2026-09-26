@@ -7,7 +7,7 @@
     "src/sue.py": "c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944",
     "src/common.py": "93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa",
     "src/forward_test_daily.py": "5b337715b6e0786f18ab7b6af302241abecbc12b0839d0331398f9e8f6a3418f",
-    "src/run_2x2.py": "b14c36a219cf46f8d091ce95f1727093f0907844952100f1d08f335ddaa5a4be",
+    "src/run_2x2.py": "88d7d79681e689b8606b213d3d9e82e6dd355cbd6c15d7c0081c8e15c1f92765",
     "src/scrub_audit.py": "cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42",
     "src/pilot.py": "d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b",
     "src/gpulock.py": "bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d",
@@ -516,5 +516,5 @@
   },
   "trim_tokens": 30000,
   "hash_convention": "SHA-256 of the file as committed (LF). Reproduce with: git show <commit>:<path> | sha256sum",
-  "hashes_at_commit": "c9383684a04de42cc4112c4312550021a04ea4ff"
+  "hashes_at_commit": "f70a0cc909252da69d8f6013698856321c5079dd"
 }

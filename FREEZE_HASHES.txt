@@ -2,7 +2,7 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : e74e2a9f3bc0385d617b8833ce4d59ca5f502d95
+Commit             : f70a0cc909252da69d8f6013698856321c5079dd
 Generated          : 2026-09-26
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
@@ -25,10 +25,10 @@ NOT with `sha256sum <file>` on a Windows checkout: this repository is cloned wit
 core.autocrlf=true, which writes CRLF to the working tree and would give a different
 hash for every file. That mistake was in this manifest until 2026-09-26 (D-021).
 
-13a90e5ffcca43a7e658b35ce1ba07848c894b4704a60fec667da255a0976f7e  deviations.md
+97c793e9fd35165e258c19edab8056fc172930bae13f6190894114c1957bd750  deviations.md
 13edbf15e950846795ff94488b5d0da6a594d3e0578fd838c83d2fd912854927  excluded_event_ids.csv
 6098f1d1b26250e389b077a4724c7dc6e95d09667e27597908b1f1c538fa61d4  prereg.md
-f238c35469957de35bcaaf403189141bac24db41421a48f5d684692650cb9ce3  scrubber_freeze.json
+978751aec4fb1119c07f63378a573f56f3cdbdcc6071055897ad1712c2972e6e  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -42,7 +42,7 @@ fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f  src/scrub.py
 c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944  src/sue.py
 93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa  src/common.py
 5b337715b6e0786f18ab7b6af302241abecbc12b0839d0331398f9e8f6a3418f  src/forward_test_daily.py
-b14c36a219cf46f8d091ce95f1727093f0907844952100f1d08f335ddaa5a4be  src/run_2x2.py
+88d7d79681e689b8606b213d3d9e82e6dd355cbd6c15d7c0081c8e15c1f92765  src/run_2x2.py
 cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42  src/scrub_audit.py
 d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b  src/pilot.py
 bea5977f78343b435ed35c0fa5e451e514153b2bac4e6d5713d53a0efeb8911d  src/gpulock.py

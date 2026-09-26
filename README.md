@@ -29,7 +29,7 @@ Everything here is mirrored from the private working repository
 [github.com/Vamiko234/gemma-earnings-study](https://github.com/Vamiko234/gemma-earnings-study) at commit:
 
 ```
-e74e2a9f3bc0385d617b8833ce4d59ca5f502d95
+f70a0cc909252da69d8f6013698856321c5079dd
 ```
 
 Mirrored on 2026-09-26.

@@ -2153,3 +2153,71 @@ fourteen days of GPU time.
 | 2026-09-26 | §3.1 | Tiingo account moves to a parent; free-plan licence treated as no-redistribution until Tiingo answers | Terms require legal capacity to contract; author is 15 | None |
 | 2026-09-26 | §13.3 | The mirror sync refuses price data by filename, by content, and by credential shape | A licence breach cannot be withdrawn once published | None |
 | 2026-09-26 | §4.8 | Tiingo removed from the scoring gate; retained as a gate on the price pull and on any public price-derived artefact | Scoring never reads prices; returns are joined after all arms finish | None |
+
+---
+
+## D-023 · 2026-09-26 · A stop button, because the run shares a machine with its author
+
+The confirmatory run takes one to two weeks on the author's own PC. A fortnight in which the
+machine cannot be used is not a realistic plan, and the realistic alternative — killing the
+process when the GPU is needed — is how a run ends up with a half-written row that nobody
+notices for a week.
+
+### The stop is a file, checked between events
+
+`results/confirmatory/STOP`, read at exactly the point the GPU lock is already read: **between
+events, never mid-event.** The event in flight always finishes, so a row is never half-written
+and the resume key is never orphaned.
+
+A file rather than a signal, for three reasons: it works from the dashboard, a terminal or
+Explorer; it persists, so a stop stays stopped if the process dies for another reason; and it
+needs no special privileges.
+
+A stopped arm leaves **the same artefacts as a completed one** — progress written, batch
+hashed, pushed — and is logged as `arm STOPPED` rather than `arm done`, so the distinction
+survives in the record. Remaining arms are not started, and `main()` exits **5**.
+`KeyboardInterrupt` exits 5 too, with the honest note that the event in flight was not
+recorded and will be re-scored.
+
+### The dashboard
+
+`src/dashboard.py`, Flask on **localhost:8511** (8510 is the VORTEX dashboard), launched by
+`scripts/run_dashboard.bat`. It shows overall and per-arm progress, an ETA, the five
+missingness metrics kept apart (D-020), the three launch gates, GPU, disk, the forward-test
+health line, and the tail of the run log. Two buttons: **Stop after current event** and
+**Resume**.
+
+**Bound to localhost deliberately.** It can start and stop a process on this machine, so it
+must not be reachable from anywhere else. It is also read-only about the science: it never
+scores, never writes a result row and never touches the frozen config. It reads the artefacts
+the runner writes and toggles one flag.
+
+**The ETA tells the truth about itself.** Below 300 scored events it is labelled provisional
+and says why — two rehearsals of the same 20 events implied 8.9 and 14.6 days (D-016). An ETA
+that looks authoritative at n=19 invites exactly the wrong decision about whether to leave the
+machine alone for a week.
+
+### Verified end to end, on the live run
+
+Not asserted — exercised, with the run actually going:
+
+1. **Resume** after the process was killed: `resume: 19 already scored, 3,339 to go`. No event
+   re-scored, none lost.
+2. **Stop**: flag written; the event in flight completed; `hashed 21 events, pushed`;
+   `arm STOPPED: 21/3,358`; remaining arms not started; process exited on its own.
+3. **Resume** again: picked up and continued.
+
+Two things surfaced during that test that are worth recording, because both are the new
+machinery working rather than failing:
+
+- **The D-016 retry fired for real.** `transient faults 1 (1 recovered on retry, 0 given up)`.
+  Under the code of two days ago that event would have been dropped permanently and invisibly.
+- **The row-then-key ordering proved itself.** After the kill: 21 rows, 19 keys. The two
+  without keys were fetch failures, correctly left un-keyed so they would be retried — and one
+  of them, BAX, then reached its third attempt and was logged `GIVING UP after 3 attempts -
+  recorded as permanently failed, not silently dropped`.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-26 | §4.9 | Graceful stop via a flag file, honoured between events; exit 5 | The run shares a machine with its author for two weeks; killing it risks a half-written row | None |
+| 2026-09-26 | §10 | Local dashboard on localhost:8511 for progress, ETA, fault metrics and stop/resume | The run must be operable by someone not reading a terminal | None |
