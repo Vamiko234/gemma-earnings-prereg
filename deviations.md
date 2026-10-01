@@ -2221,3 +2221,78 @@ machinery working rather than failing:
 |---|---|---|---|---|
 | 2026-09-26 | §4.9 | Graceful stop via a flag file, honoured between events; exit 5 | The run shares a machine with its author for two weeks; killing it risks a half-written row | None |
 | 2026-09-26 | §10 | Local dashboard on localhost:8511 for progress, ETA, fault metrics and stop/resume | The run must be operable by someone not reading a terminal | None |
+
+---
+
+## D-024 · 2026-09-30 · The run was dead for hours behind a clean-looking log line
+
+### What happened
+
+Arm 1 finished. Arm 2 reached 1,046 of 3,358 and stopped. Every attempt to restart then died
+instantly, and the log read:
+
+```
+[post_scrubbed] resume: 3,358 already scored, 0 to go
+[post_scrubbed] nothing to do
+Traceback (most recent call last):
+ValueError: not enough values to unpack (expected 3, got 2)
+```
+
+The cause is mine, introduced in D-023. `run_arm()` gained a third return value (`stopped`),
+and I updated the return at the end of the function but **not the early return on the
+"nothing to do" path**. So the first restart after any arm completed crashed in `main()`
+before reaching the next arm.
+
+The bug could only fire once arm 1 was complete, which is precisely when it did.
+
+### Why it went unnoticed
+
+The traceback sits *below* a line that reads `nothing to do` — which is what a healthy skip
+of a completed arm looks like. Glanced at, the log says "arm 1 is done"; read to the end, it
+says "and then everything died". The author restarted it twice and saw the same reassuring
+line both times.
+
+Every existing test passed. `test_runner` exercises `run_arm` on arms with work to do; nothing
+exercised the branch where an arm has **nothing** to do, and nothing checked that the two
+branches returned the same shape. **A unit test of either branch would have passed. What was
+missing was a check that they agree** - the same gap as D-015, where two anonymisers each
+worked and nothing compared them.
+
+### The fix
+
+Both returns now carry three values. `test_every_run_arm_exit_returns_the_same_shape` checks
+this two ways: statically, by walking the AST of `run_arm` and requiring every `return` to have
+the same arity; and dynamically, by running an arm to completion and then running it again, so
+the exact branch that broke is executed.
+
+### Also fixed: the dashboard read over 100%
+
+`post_scrubbed` displayed **3,612 / 3,358 = 107.6%**. The dashboard counted *rows*, and a
+retried event writes one row per attempt (D-016) - arm 1 had 233 transient faults, so 254 extra
+rows. It now counts **unique events**, and arm 1 reads exactly 3,358 / 3,358.
+
+Worth stating plainly: a progress bar reading 107% is harmless in itself, but the same
+row-versus-event confusion in an analysis would silently inflate n. The confirmatory analysis
+must count unique `acc`, never rows.
+
+### Arm 1 is complete
+
+**3,358 of 3,358 post-cutoff scrubbed events scored**, on one unchanging environment
+fingerprint (`0.34.2|2dd70431afed|591.86|3.11.15`).
+
+| | count | of 3,358 |
+|---|---|---|
+| Transient GPU faults | 233 | 6.9% |
+| **Recovered on retry** | **223** | **95.7% of faults** |
+| Given up after 3 attempts | 10 | 0.3% |
+| Unparseable | 113 | 3.4% |
+
+The D-016 retry recovered **223 events that the pre-retry code would have discarded silently**,
+and the 10 it could not recover are recorded as permanently failed rather than left as blank
+cells. The 6.9% fault rate sits between the two rehearsal readings (15% and 0%), which is the
+argument for reporting it as a measured count rather than an assumed rate.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-09-30 | §4.9 | `run_arm`'s early return fixed to three values; arity checked statically and dynamically | A restart past a completed arm crashed; the run sat dead behind a healthy-looking log line | None - no event was scored incorrectly, only not scored |
+| 2026-09-30 | §10 | The dashboard counts unique events, not rows | Retried events write one row per attempt; progress read 107.6% | None |
