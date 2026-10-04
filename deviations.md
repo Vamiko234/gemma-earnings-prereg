@@ -2296,3 +2296,82 @@ argument for reporting it as a measured count rather than an assumed rate.
 |---|---|---|---|---|
 | 2026-09-30 | §4.9 | `run_arm`'s early return fixed to three values; arity checked statically and dynamically | A restart past a completed arm crashed; the run sat dead behind a healthy-looking log line | None - no event was scored incorrectly, only not scored |
 | 2026-09-30 | §10 | The dashboard counts unique events, not rows | Retried events write one row per attempt; progress read 107.6% | None |
+
+---
+
+## D-025 · 2026-10-04 · The forward test died on day two of the live season, behind a ragged CSV
+
+### What happened
+
+The season opened on 1 October. The forward test polled, found three candidates and scored
+them — ACN, MKC, NKE — and exited 0.
+
+**Every run since then failed.** Five consecutive runs: 2 Oct 05:30 and 18:30, 3 Oct 05:30 and
+18:30, 4 Oct 05:30. Each died at the same line, before polling anything:
+
+```
+done = set(pd.read_csv(idx_p).acc) if idx_p.exists() else set()
+pandas.errors.ParserError: Error tokenizing data. Expected 27 fields in line 3, saw 31
+```
+
+`results/forward_test/scored_index.csv` was created in September for the ADBE pipeline test,
+with **27 columns**. D-012, D-015 and D-016 then added columns to the scored row
+(`release_tokens`, `density_probe`, `fit_log`, `engine_retries`, `engine_retry_detail`,
+`env_fingerprint`). The writer was `to_csv(mode="a", header=not idx_p.exists())`, which writes
+the header **once, ever** — so 1 October appended **31-field rows under a 27-field header**.
+
+The file was then unreadable, and the next run reads it to build its resume set. The forward
+test had bricked itself, in the first week of the one arm that cannot be re-run.
+
+### What was lost
+
+**Two events: FCX and TSLA, both filed 2 October.** They can still be scored, but their next
+open passed days ago, so they will carry `scored_before_next_open=False` and **cannot count
+toward the prospective claim**. That is the whole value of the forward test, and it is gone
+for those two.
+
+Nothing scored was lost. The batch JSONLs are the authoritative record, are hashed and are
+pushed; the index was rebuilt from them and all four prior events recovered intact.
+
+The damage is bounded only because the season is quiet in its first week. Had this happened
+during peak earnings weeks it would have cost dozens of events.
+
+### Why nothing caught it
+
+The forward test writes a health line on every run, including failures, and pushes it
+off-machine — so the failures *were* recorded, as `exit_code=1` with blank `tickers_polled`,
+five times. **Nobody was reading them.** The mechanism built in D-004 to make a silent failure
+visible worked exactly as designed and still nothing happened, because visibility is not the
+same as attention.
+
+And the defect itself is one this project has already fixed — twice. `run_2x2` had the same
+row-schema drift (D-016) and gained a single `SCHEMA` with a strict `_pad()`; the dashboard had
+the same row-versus-event confusion (D-024). **The forward test never got either treatment**,
+because every fix was applied where the bug was found rather than everywhere the pattern
+lives.
+
+### The fix
+
+`append_to_index()` replaces the raw append. The file's existing header wins: new columns are
+**logged and dropped** rather than silently widening rows, absent columns are filled blank, the
+order is forced to match, and the file is **re-parsed immediately after writing** so a
+corruption surfaces in the run that caused it rather than in the next one. A schema change is
+now a deliberate migration with a visible log line.
+
+The ragged original is kept as `scored_index.ragged-backup-20261004.csv` rather than deleted.
+
+### Two things to change beyond the code
+
+1. **The health log needs an alarm, not just a row.** Five pushed failures over 2.5 days is a
+   monitoring failure as much as a code one. A daily check of the last health line — or a push
+   notification on any non-zero exit — is the obvious follow-up. Not built here; recorded as
+   the next thing to build.
+2. **Fixes should be applied by pattern, not by site.** When a defect class is identified, the
+   other places it can live should be checked the same day. D-016's schema fix should have been
+   applied to the forward test in the same pass.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-10-04 | §4.8 | `scored_index.csv` rebuilt from the batch JSONLs under one schema | The index was ragged and unreadable; the forward test died on every run for 2.5 days | None — all four scored events recovered intact |
+| 2026-10-04 | §4.8 | `append_to_index()` pins the header, logs schema drift, and re-parses after writing | `to_csv(mode="a")` writes a header once and silently widens rows thereafter | None |
+| 2026-10-04 | §4.8 | FCX and TSLA (filed 2 Oct) carry `scored_before_next_open=False` and are excluded from the prospective claim | Their next open passed while the job was dead | None — recorded, not discarded |

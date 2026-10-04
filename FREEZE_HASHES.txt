@@ -2,8 +2,8 @@ FREEZE HASHES - gemma-earnings-study
 ======================================================================
 
 Private repository : https://github.com/Vamiko234/gemma-earnings-study
-Commit             : f143f3d3dc7e0837bdd9852bb5d84aac68850b24
-Generated          : 2026-09-30
+Commit             : 96910f02a52bb55f4bcf86293efd690939cc59ed
+Generated          : 2026-10-04
 
 CONVENTION. Every hash is the SHA-256 of the file AS COMMITTED, i.e. with LF line
 endings. Reproduce any line with:
@@ -25,10 +25,10 @@ NOT with `sha256sum <file>` on a Windows checkout: this repository is cloned wit
 core.autocrlf=true, which writes CRLF to the working tree and would give a different
 hash for every file. That mistake was in this manifest until 2026-09-26 (D-021).
 
-7d026a0ca7f02ab81159d0b29c5d8947220fdacb54050a4efdb1687eb5a6da5d  deviations.md
+f831a10fca812cb29859131fc2f28eb52444c579d5df5f1a74a726a7327cb7e1  deviations.md
 13edbf15e950846795ff94488b5d0da6a594d3e0578fd838c83d2fd912854927  excluded_event_ids.csv
 6098f1d1b26250e389b077a4724c7dc6e95d09667e27597908b1f1c538fa61d4  prereg.md
-9e5c277bee98b65b2871a4093f7370c02f834b065b3cd2da27baef4290e41f4a  scrubber_freeze.json
+395b5089edea7230667b983ec074eda471ca03f3760d6d4fe8f0bdd99503d821  scrubber_freeze.json
 
 FROZEN SOURCE FILES (private repository, hashes only)
 ----------------------------------------------------------------------
@@ -41,7 +41,7 @@ fbcbb89dbe7a44bc10af449e1bfa3547b535e33a0ff3aeb110cbd8e87905a60f  src/scrub.py
 065d913a2b36ef8a1c0981137780f0c9e0ff464ff60dd39b8f438a7cd0e767e5  src/scoring.py
 c009eb40bc41e1ea8619669c4c4d8c896364fedcde1df2e6ed820a092a349944  src/sue.py
 93966a6a410a21504766f797156a4c3da31467f162b69971e66b3bc76b7ad6fa  src/common.py
-5b337715b6e0786f18ab7b6af302241abecbc12b0839d0331398f9e8f6a3418f  src/forward_test_daily.py
+f00032e4f92bd12db40513cedc7f99e08ab92edf8eae06f5b60130a2733665c5  src/forward_test_daily.py
 be86cc249c67d363f95a9a401425c2036e4d450ed0b2a0fc54e7d029fbcbdbcc  src/run_2x2.py
 cbb4ec58f042d9e8c358d59ce0db607ac813db1a17d5d03d18932017ebb51a42  src/scrub_audit.py
 d4bba10fef5ad5df245c2a135726978299696402b02d1c130b694bad3018622b  src/pilot.py
