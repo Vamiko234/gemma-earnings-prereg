@@ -2375,3 +2375,73 @@ The ragged original is kept as `scored_index.ragged-backup-20261004.csv` rather 
 | 2026-10-04 | §4.8 | `scored_index.csv` rebuilt from the batch JSONLs under one schema | The index was ragged and unreadable; the forward test died on every run for 2.5 days | None — all four scored events recovered intact |
 | 2026-10-04 | §4.8 | `append_to_index()` pins the header, logs schema drift, and re-parses after writing | `to_csv(mode="a")` writes a header once and silently widens rows thereafter | None |
 | 2026-10-04 | §4.8 | FCX and TSLA (filed 2 Oct) carry `scored_before_next_open=False` and are excluded from the prospective claim | Their next open passed while the job was dead | None — recorded, not discarded |
+
+---
+
+## D-026 · 2026-10-06 · One read timeout killed the run, and the log blamed the disk
+
+### What happened
+
+On 4 October at 17:53 the run stopped:
+
+```
+HALTED: HTTPConnectionPool(host='localhost', port=11434): Read timed out. (read timeout=1800)
+```
+
+It sat dead for **two days**, at 400 of 9,148 events in arm 3.
+
+The event immediately before had taken **1,213 seconds** against a ~35 s median, so Ollama was
+already unwell; the next request then hung for the full 1,800 s timeout. The engine recovered
+on its own — it answers in 28 ms now — but the run did not, because nothing retried it.
+
+### Two mistakes, not one
+
+**1. The retry could not see it.** D-016 retries transient engine faults by inspecting
+`j["error"]` — a field in a JSON response. A timeout raises *before* any response exists, so
+the retry never ran. The exception propagated out of `run_arm`, out of `main`, and ended the
+process. The retry built precisely for "the engine is unwell" missed the most common way an
+engine is unwell.
+
+**2. The log blamed the wrong thing.** `requests.ReadTimeout` subclasses `OSError`, and
+`run_2x2`'s handler for the D-018 disk floor was `except OSError`. So the timeout was caught
+by the **disk** handler and exited **3 — "disk below the 20 GB floor"** — on a machine with
+84 GB free. Anyone reading the exit code would have gone looking at storage.
+
+An exception class that is caught by accident is worse than no class at all.
+
+### The fix
+
+`_post()` wraps every call in the scoring path — token counting, scoring, both H3 probes — and
+retries `requests.RequestException` exactly as D-016 retries CUDA faults: same
+`ENGINE_RETRIES`, same backoff. After the final attempt it raises **`RuntimeError`**, which
+the runner already treats as a per-event failure: the event gets no resume key and the next
+run retries it. A sick engine now costs one event, not the run.
+
+`DiskFloorError(OSError)` is raised only by `assert_disk_space()`, and both runners catch
+*that* class. Any other `OSError` now exits 1 with an explicit "NOT the disk floor" message
+rather than impersonating a storage problem.
+
+### What it cost, and what it did not
+
+Two days of GPU time. **No data**: arm 3 had 400 events saved, the resume keys were intact,
+and the run picks up exactly where it stopped.
+
+The forward test was unaffected and has run cleanly on every schedule since the D-025 repair —
+exit 0 at every invocation from 4 Oct 12:24 onward, now tracking 10 candidates in the season
+window.
+
+### The pattern, again
+
+This is the fourth defect of the same shape in this project: **the check did not cover the case
+it was built for.** D-012's truncation detector read the output of the truncation. D-015's
+tests each exercised one anonymiser and never compared them. D-024's `run_arm` returned two
+shapes and no test compared the branches. Here, a retry for engine faults did not cover the
+commonest engine fault.
+
+The working rule added after D-025 — fix by pattern, not by site — applies to error *classes*
+as well as to code: when something is retried, every way it can fail must reach the retry.
+
+| Date | Prereg § | Change | Reason | Re-run required |
+|---|---|---|---|---|
+| 2026-10-06 | §4.5 | Transport failures retried in the scoring path via `_post`; final failure is a per-event `RuntimeError` | A single read timeout ended a two-week run and cost two days | None — 400 events were saved and the resume was exact |
+| 2026-10-06 | §2.1 | `DiskFloorError` is raised and caught specifically; other `OSError`s exit 1 with an explicit message | `requests.ReadTimeout` subclasses `OSError`, so a timeout exited as "disk below floor" with 84 GB free | None |
